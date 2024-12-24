@@ -1,0 +1,88 @@
+/* src/layouts/MainLayout.css */
+
+/* 整体布局容器 */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* 顶部导航栏样式 */
+.header {
+  background-color: #333;
+  color: #fff;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header .logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.header nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.header nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.header nav ul li a:hover {
+  text-decoration: underline;
+}
+
+/* 主内容区域 */
+.main-content {
+  display: flex;
+  flex-grow: 1;
+}
+
+.sidebar {
+  background-color: #f4f4f4;
+  width: 200px;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  margin: 15px 0;
+}
+
+.sidebar ul li a {
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+}
+
+.sidebar ul li a:hover {
+  color: #007bff;
+}
+
+/* 主内容区 */
+.content-area {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #fff;
+  min-height: 100%;
+  box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 底部样式 */
+.footer {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+}
