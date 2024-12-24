@@ -1,7 +1,7 @@
 
 // src/hooks/useTable.js
 import { useState,  useCallback } from 'react';
-import { getTables, deleteTable, syncMetadata, generateCodeForIds, getColumnsById } from '../api/talbe/TableService';
+import { getTables, deleteTable, syncMetadata, generateCodeForIds,generateCodeFrontForIds, getColumnsById } from '../api/talbe/TableService';
 
 const useTable = () => {
   const [tableData, setTableData] = useState([]); // 表格数据
@@ -93,6 +93,19 @@ const useTable = () => {
     }
   }, []);
 
+
+  const generateCodeFront = useCallback(async (tableIds) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response= await generateCodeFrontForIds(tableIds);
+    } catch (err) {
+      setError(err.message || 'Failed to generate code.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   
   return {
     tableData,
@@ -105,6 +118,7 @@ const useTable = () => {
     removeTable,
     syncTableMetadata,
     generateCode,
+    generateCodeFront,
   };
 };
 

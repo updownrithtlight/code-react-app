@@ -20,6 +20,7 @@ const TableList = () => {
     loading,
     removeTable,
     generateCode,
+    generateCodeFront,
     syncTableMetadata,
     fetchTables,
   } = useTable();
@@ -58,12 +59,26 @@ const TableList = () => {
   
     // 定义批量生成代码的回调
     const handleBatchGenerate = () => {
-      const selectedIds = selectedRows.map((row) => row.id);
-      if (selectedIds.length === 0) {
+      console.log('塔利班',selectedRows)
+      if (selectedRows.length === 0) {
         console.warn('请先选择数据表!');
         return;
       }
-      generateCode(selectedIds)
+      generateCode(selectedRows)
+        .then(() => {
+          console.log('批量生成代码成功');
+        })
+        .catch((err) => {
+          console.error('批量生成代码失败:', err);
+        });
+    };
+    const onBatchGenerateFront = () => {
+      console.log('塔利班',selectedRows)
+      if (selectedRows.length === 0) {
+        console.warn('请先选择数据表!');
+        return;
+      }
+      generateCodeFront(selectedRows)
         .then(() => {
           console.log('批量生成代码成功');
         })
@@ -80,7 +95,7 @@ const TableList = () => {
         onQueryParamChange={handleQueryParamChange}
         onSearch={handleSearch}
       />
-      <ActionButtons onSync={handleSync} onBatchGenerate={handleBatchGenerate} />
+      <ActionButtons onSync={handleSync} onBatchGenerate={handleBatchGenerate} onBatchGenerateFront={onBatchGenerateFront} />
       <DataTable
         tableData={tableData}
         selectedRows={selectedRows}
