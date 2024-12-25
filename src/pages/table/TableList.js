@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Typography, Pagination } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import useTable from '../hooks/useTable';
-import SearchForm from '../components/SearchForm';
-import ActionButtons from '../components/ActionButtons';
-import DataTable from '../components/DataTable';
+import useTable from '../../hooks/useTable';
+import SearchForm from '../../components/SearchForm';
+import ActionButtons from '../../components/ActionButtons';
+import DataTable from '../../components/DataTable';
 
 const TableList = () => {
   const navigate = useNavigate();
@@ -88,7 +88,7 @@ const TableList = () => {
     };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '2px' }}>
       <Typography.Title level={4}>表管理</Typography.Title>
       <SearchForm
         queryParams={queryParams}

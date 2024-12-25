@@ -24,7 +24,7 @@ const AppRoutes = () => (
 
     {/* 无权限页面 */}
     <Route path="/no-permission" element={<NoPermissionPage />} />
-    <Route path="/columns/:tableId/:tableName" element={<ProtectedRoute><MainLayout><Columns /></MainLayout></ProtectedRoute>} />
+    <Route path="/columns/:tableId/:tableName" element={<MainLayout><Columns /></MainLayout>} />
 
     {/* 404 页面 */}
     <Route path="*" element={<Navigate to="/no-permission" />} />

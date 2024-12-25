@@ -1,88 +1,70 @@
-/* src/layouts/MainLayout.css */
+/* MainLayout.css */
 
-/* 整体布局容器 */
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+/* 确保 Layout 使用 flex 布局 */
+.ant-layout {
+  height: 100vh; /* 占满整个视口高度 */
 }
 
-/* 顶部导航栏样式 */
-.header {
-  background-color: #333;
+
+
+/* Logo 样式 */
+.logo {
+  height: 64px;
+  background: linear-gradient(90deg, #1890ff, #40a9ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
   color: #fff;
-  padding: 15px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Header 样式 */
+.ant-layout-header {
+  background: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0;
 }
 
-.header .logo {
-  font-size: 24px;
+/* Header 左侧显示动态菜单标题 */
+.header-left {
+  font-size: 18px;
   font-weight: bold;
 }
 
-.header nav ul {
-  list-style: none;
+/* Header 右侧用户信息 */
+.header-right {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 16px;
 }
 
-.header nav ul li a {
-  color: #fff;
-  text-decoration: none;
-  font-size: 16px;
+/* Sider 样式 */
+.ant-layout-sider {
+  height: 100vh; /* 固定 Sider 的高度 */
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #001529;
+  z-index: 1000;
+  width: 150px; /* 固定宽度 */
 }
 
-.header nav ul li a:hover {
-  text-decoration: underline;
+/* Content 样式 */
+.ant-layout-content {
+  margin-top: 0; /* 移除顶部间距 */
+
+  margin-left: 200px; /* 与 Sider 对齐 */
+  padding:  0 0px;
+  background: #f0f2f5;
+  min-height: calc(100vh - 64px); /* 确保内容占满剩余高度 */
+  overflow: visible; /* 禁用滚动条 */
+  box-sizing: border-box;
 }
 
-/* 主内容区域 */
-.main-content {
-  display: flex;
-  flex-grow: 1;
-}
-
-.sidebar {
-  background-color: #f4f4f4;
-  width: 200px;
-  padding: 20px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-}
-
-.sidebar ul li {
-  margin: 15px 0;
-}
-
-.sidebar ul li a {
-  text-decoration: none;
-  color: #333;
-  font-size: 16px;
-}
-
-.sidebar ul li a:hover {
-  color: #007bff;
-}
-
-/* 主内容区 */
-.content-area {
-  flex-grow: 1;
-  padding: 20px;
-  background-color: #fff;
-  min-height: 100%;
-  box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
-}
-
-/* 底部样式 */
-.footer {
-  background-color: #333;
-  color: #fff;
-  padding: 10px;
-  text-align: center;
-}
