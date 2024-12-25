@@ -14,8 +14,7 @@ const useMenu = () => {
     const fetchMenu = async () => {
       try {
         const data = await getMenuApi(); // 调用 API 获取菜单数据
-        console.log('菜单',data)
-        setMenuData(data.data); // 更新菜单数据
+       setMenuData(data.data); // 更新菜单数据
       } catch (err) {
         console.error('Failed to load menu:', err);
         setError(err);

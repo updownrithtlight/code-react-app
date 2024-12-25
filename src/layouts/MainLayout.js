@@ -1,16 +1,17 @@
 import React from 'react';
-import { Layout, Menu, Dropdown, Avatar } from 'antd';
+import { Layout, Menu,  } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
-import { DownOutlined, UserOutlined } from '@ant-design/icons';
+// import { DownOutlined, UserOutlined } from '@ant-design/icons';
 import useMenu from '../hooks/useMenu';
-import './MainLayout.css';
+import Header from '../components/Header';
 
-const { Header, Sider, Content } = Layout;
+import '../assets/styles/MainLayout.css';
+
+const {  Sider, Content } = Layout;
 
 const MainLayout = ({ children }) => {
   const { menuData, loading, error } = useMenu();
   const location = useLocation();
-
   // 根据当前路径动态显示菜单标题
   const currentMenu = menuData.find((menu) => menu.path === location.pathname);
 
@@ -25,15 +26,6 @@ const MainLayout = ({ children }) => {
       </div>
     );
   }
-
-  // 用户操作下拉菜单
-  const userMenu = (
-    <Menu>
-      <Menu.Item key="1">个人中心</Menu.Item>
-      <Menu.Item key="2">设置</Menu.Item>
-      <Menu.Item key="3">退出</Menu.Item>
-    </Menu>
-  );
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -52,19 +44,7 @@ const MainLayout = ({ children }) => {
       {/* 主体布局 */}
       <Layout>
         {/* Header */}
-        <Header className="ant-layout-header">
-          <div className="header-left">{currentMenu?.name || 'Dashboard'}</div>
-          <div className="header-right">
-            <Dropdown overlay={userMenu} trigger={['click']}>
-              <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                <Avatar size="small" icon={<UserOutlined />} />
-                <span style={{ marginLeft: 8 }}>用户名称</span>
-                <DownOutlined style={{ marginLeft: 4 }} />
-              </div>
-            </Dropdown>
-          </div>
-        </Header>
-
+        <Header currentMenuTitle={currentMenu?.name} />
         {/* Content */}
         <Content className="ant-layout-content">{children}</Content>
       </Layout>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Typography, Pagination } from 'antd';
+import { Pagination,  } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import useTable from '../../hooks/useTable';
 import SearchForm from '../../components/SearchForm';
@@ -89,7 +89,6 @@ const TableList = () => {
 
   return (
     <div style={{ padding: '2px' }}>
-      <Typography.Title level={4}>表管理</Typography.Title>
       <SearchForm
         queryParams={queryParams}
         onQueryParamChange={handleQueryParamChange}

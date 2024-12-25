@@ -1,0 +1,32 @@
+
+/* Header 样式 */
+.ant-layout-header {
+    background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header 左侧 */
+  .header-left {
+    margin-left: 200px; /* 与 Sider 对齐 */
+    font-size: 18px;
+    font-weight: bold;
+    color: #000;
+    flex: 1;
+    white-space: nowrap;
+    overflow: visible;
+    text-align: left;
+    line-height: 64px;
+  }
+  
+  /* Header 右侧 */
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  
