@@ -4,9 +4,21 @@ import { Dropdown, Avatar, Menu } from 'antd';
 import { DownOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import '../assets/styles/Header.css';
+import { useAuth } from '../contexts/AuthContext';
 
 const Header = ({ currentMenuTitle = 'Dashboard' }) => {
   const navigate = useNavigate();
+    const { logout } = useAuth();
+    const handleLogout = async () => {
+      try {
+        await logout(); // 调用后端退出 API
+      } catch (error) {
+        console.error('Logout failed:', error); // 记录错误日志（非必要）
+      } finally {
+        navigate('/login'); // 跳转到登录页面
+      }
+    };
+  
 
   // 用户操作下拉菜单
   const userMenu = (
@@ -17,7 +29,7 @@ const Header = ({ currentMenuTitle = 'Dashboard' }) => {
         } else if (key === '2') {
           navigate('/settings');
         } else if (key === '3') {
-          navigate('/logout');
+          handleLogout(); // 调用退出逻辑
         }
       }}
     >

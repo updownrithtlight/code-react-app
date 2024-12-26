@@ -56,6 +56,7 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         } catch (refreshError) {
           // If refresh fails, clear auth state and redirect to login
+          console.log('哪里走',refreshError)
           store.dispatch(clearAuthState());
           history.push('/login');
           return Promise.reject(refreshError);

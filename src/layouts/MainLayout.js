@@ -4,13 +4,12 @@ import { Link, useLocation } from 'react-router-dom';
 // import { DownOutlined, UserOutlined } from '@ant-design/icons';
 import useMenu from '../hooks/useMenu';
 import Header from '../components/Header';
-
 import '../assets/styles/MainLayout.css';
 
 const {  Sider, Content } = Layout;
 
 const MainLayout = ({ children }) => {
-  const { menuData, loading, error } = useMenu();
+  const { menuData, loading,  } = useMenu();
   const location = useLocation();
   // 根据当前路径动态显示菜单标题
   const currentMenu = menuData.find((menu) => menu.path === location.pathname);
@@ -19,13 +18,7 @@ const MainLayout = ({ children }) => {
     return <div style={{ textAlign: 'center', marginTop: '20%' }}>Loading menu...</div>;
   }
 
-  if (error) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '20%', color: 'red' }}>
-        Failed to load menu: {error.message}
-      </div>
-    );
-  }
+
 
   return (
     <Layout style={{ minHeight: '100vh' }}>

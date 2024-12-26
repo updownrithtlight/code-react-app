@@ -1,11 +1,10 @@
 
 // src/hooks/useTable.js
 import { useState,  useCallback } from 'react';
-import { getTables, deleteTable, syncMetadata, generateCodeForIds,generateCodeFrontForIds, getColumnsById } from '../api/talbe/TableService';
+import { getTables, deleteTable, syncMetadata, generateBaseCodeFrontFor,generateCodeForIds,generateCodeFrontForIds,  } from '../api/talbe/TableService';
 
 const useTable = () => {
   const [tableData, setTableData] = useState([]); // 表格数据
-  const [columnsData, setColumns] = useState([]); // 列数据
   const [loading, setLoading] = useState(false); // 加载状态
   const [error, setError] = useState(null); // 错误信息
 
@@ -35,22 +34,7 @@ const useTable = () => {
     }
   }, []);
 
-  // 获取列数据
-  const fetchColumns = useCallback(async (tableId) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getColumnsById(tableId);
-      console.log('test',data.data)
-
-      setColumns(data.data || []);
-      console.log('tested',columnsData)
-    } catch (err) {
-      setError(err.message || 'Failed to fetch columns.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+ 
 
   // 删除表
   const removeTable = useCallback(async (tableId) => {
@@ -106,19 +90,31 @@ const useTable = () => {
     }
   }, []);
 
+
+  const generateBaseCodeFront = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response= await generateBaseCodeFrontFor();
+    } catch (err) {
+      setError(err.message || 'Failed to generate code.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   
   return {
     tableData,
-    columnsData,
     loading,
     error,
     pagination,
     fetchTables,
-    fetchColumns,
     removeTable,
     syncTableMetadata,
     generateCode,
     generateCodeFront,
+    generateBaseCodeFront,
   };
 };
 

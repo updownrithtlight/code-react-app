@@ -1,38 +1,18 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setAuthState, clearAuthState } from '../state/authSlice';
-import { loginApi, logoutApi, getUserInfoApi } from '../api/AuthService';
+import { loginApi, logoutApi } from '../api/AuthService';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const auth = useSelector((state) => state.auth); // 从 Redux 获取认证状态
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true); // 加载状态
-
-  // 初始化：检查用户登录状态
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const user = await getUserInfoApi(); // 调用 API 获取用户信息
-        dispatch(setAuthState({ isAuthenticated: true, user }));
-      } catch (error) {
-        dispatch(clearAuthState()); // 未登录或发生错误，清除状态
-        console.error('Failed to fetch user info:', error);
-      } finally {
-        setLoading(false); // 设置加载完成
-      }
-    };
-
-    initializeAuth();
-  }, [dispatch]);
-
   // 登录
   const login = async (credentials) => {
     try {
       const data = await loginApi(credentials); // 调用后端 API 登录
       const { user, accessToken } = data;
-
       sessionStorage.setItem('accessToken', accessToken); // 存储 Token
       dispatch(setAuthState({ isAuthenticated: true, user })); // 更新 Redux 状态
     } catch (error) {
@@ -58,7 +38,6 @@ export const AuthProvider = ({ children }) => {
         ...auth,
         login,
         logout,
-        loading, // 暴露加载状态
       }}
     >
       {children}

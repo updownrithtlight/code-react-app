@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Button } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined,EyeOutlined } from '@ant-design/icons';
 
 const { Column } = Table;
 
@@ -39,7 +39,7 @@ const DataTable = ({
           <Button type="link" icon={<DeleteOutlined />} danger onClick={() => onDelete(record.id)}>
             删除
           </Button>
-          <Button type="link" onClick={() => onReadColumns(record.id, record.tableName)}>
+          <Button type="link" icon={<EyeOutlined />} onClick={() => onReadColumns(record.id, record.tableName)}>
             表结构
           </Button>
         </span>

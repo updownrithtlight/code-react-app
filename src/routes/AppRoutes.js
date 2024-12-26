@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import DynamicRoutes from './DynamicRoutes';
-import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../pages/LoginPage';
 import NoPermissionPage from '../pages/NoPermissionPage';
 import Columns from '../pages/Columns';
