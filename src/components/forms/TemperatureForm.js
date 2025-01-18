@@ -1,134 +1,170 @@
 import React, { useEffect, useState } from "react";
-import { Form, Select, Input, Button } from "antd";
+import { Form, Select, Input, message } from "antd";
+import { getFieldDefinitionById } from "../../api/fielddefinition/FieldDefinitionService";
+import { getProjectFieldByProjectId, saveProjectField } from "../../api/projectfield/ProjectFieldService";
 
 const { Option } = Select;
 
-const TemperatureForm = ({ formData, setFormData }) => {
-  const [form] = Form.useForm(); // 获取表单实例
-  const [customFields, setCustomFields] = useState({
-    working_temperature: false,
-    storage_temperature: false,
-  });
+const TemperatureForm = ({ projectId, fieldId }) => {
+  const [form] = Form.useForm();
+  const [fields, setFields] = useState([]);
+  const [customFields, setCustomFields] = useState({});
+  const [customValues, setCustomValues] = useState({});
 
-  // 当 formData 更新时，设置表单值
+  /** 获取初始数据 */
   useEffect(() => {
-    if (formData && formData.basicInfo) {
-      form.setFieldsValue(formData.basicInfo);
-    }
-  }, [formData]);
+    const fetchData = async () => {
+      try {
+        const [fieldResponse, projectResponse] = await Promise.all([
+          getFieldDefinitionById(fieldId),
+          getProjectFieldByProjectId(projectId),
+        ]);
 
-  // 处理选择变化
-  const handleChange = (field, value) => {
-    setCustomFields((prev) => ({
-      ...prev,
-      [field]: value === "custom", // 选择“其他”时，显示输入框
-    }));
+        console.log("字段定义:", fieldResponse);
+        console.log("项目字段:", projectResponse);
+
+        // 解析 `fieldResponse`，动态生成表单项
+        const parsedFields = fieldResponse.data.children.map((field) => ({
+          key: field.id,
+          code: field.code,
+          label: field.field_name,
+          remarks: field.remarks,
+        }));
+
+        setFields(parsedFields);
+
+        // 解析 `projectResponse`
+        const fieldMap = {};
+        projectResponse.data.forEach((item) => {
+          fieldMap[item.field_id] = item;
+        });
+
+        // 初始化 `customFields` & `customValues`
+        const customFieldsState = {};
+        const customValuesState = {};
+
+        parsedFields.forEach((field) => {
+          const projectData = fieldMap[field.key] || {};
+          const customValue = projectData.custom_value || "";
+
+          // 是否选择了 `custom`
+          const isCustom = customValue.includes("℃") || customValue === "custom";
+          customFieldsState[field.key] = isCustom;
+
+          // 解析 `custom_value`
+          customValuesState[field.key] = customValue.includes("℃")
+            ? customValue.split("~").map((v) => v.trim().replace("℃", ""))
+            : ["", ""];
+        });
+
+        setCustomFields(customFieldsState);
+        setCustomValues(customValuesState);
+
+        // 设置表单初始值
+        form.setFieldsValue(
+          parsedFields.reduce((acc, field) => {
+            acc[field.code] = fieldMap[field.key]?.custom_value || undefined;
+            return acc;
+          }, {})
+        );
+      } catch (error) {
+        message.error("Failed to load data, please try again.");
+        console.error("Fetch error:", error);
+      }
+    };
+
+    fetchData();
+  }, [fieldId, projectId, form]);
+
+  /** 自动提交 */
+  const handleSave = async (key, value) => {
+    if (!value) return;
+
+    try {
+      await saveProjectField({
+        project_id: projectId,
+        field_id: key,
+        custom_value: value,
+      });
+
+      message.success("数据已保存!");
+    } catch (error) {
+      message.error("保存失败，请重试");
+      console.error("Save error:", error);
+    }
   };
 
-  // 表单提交处理
-  const onFinish = (values) => {
-    const processedValues = { ...values };
+  /** 处理 `Select` 选择 */
+  const handleChange = (key, value) => {
+    setCustomFields((prev) => ({
+      ...prev,
+      [key]: value === "custom",
+    }));
 
-    // **拼接工作温度范围**
-    if (customFields.working_temperature) {
-      processedValues.working_temperature = `${values.customWorkingTemperatureMin}℃ ~ ${values.customWorkingTemperatureMax}℃`;
+    if (value !== "custom") {
+      handleSave(key, value);
     }
+  };
 
-    // **拼接存储温度范围**
-    if (customFields.storage_temperature) {
-      processedValues.storage_temperature = `${values.customStorageTemperatureMin}℃ ~ ${values.customStorageTemperatureMax}℃`;
+  /** 处理 `custom` 输入框 */
+  const handleCustomInputBlur = (key) => {
+    const [min, max] = customValues[key];
+
+    if (min && max) {
+      const customValue = `${min}℃ ~ ${max}℃`;
+      handleSave(key, customValue);
     }
-
-    // 清理不需要的临时输入项
-    delete processedValues.customWorkingTemperatureMin;
-    delete processedValues.customWorkingTemperatureMax;
-    delete processedValues.customStorageTemperatureMin;
-    delete processedValues.customStorageTemperatureMax;
-
-    console.log("提交数据:", processedValues);
-    setFormData(processedValues);
   };
 
   return (
-    <Form form={form} layout="inline" onFinish={onFinish}>
-      {/* 工作温度 */}
-      <Form.Item
-        label="工作温度"
-        name="working_temperature"
-        rules={[{ required: true, message: "请选择或输入工作温度！" }]}
-      >
-        <Select
-          placeholder="请选择工作温度"
-          style={{ width: 180 }}
-          onChange={(value) => handleChange("working_temperature", value)}
-        >
-          <Option value="-40℃ ~ +70℃">-40℃ ~ +70℃</Option>
-          <Option value="-55℃ ~ +85℃">-55℃ ~ +85℃</Option>
-          <Option value="custom">其他</Option>
-        </Select>
-      </Form.Item>
-
-      {/* 自定义工作温度输入框 */}
-      {customFields.working_temperature && (
-        <>
-          <Form.Item
-            name="customWorkingTemperatureMin"
-            rules={[{ required: true, message: "请输入最低工作温度！" }]}
-          >
-            <Input placeholder="最低温度(℃)" style={{ width: 100 }} />℃
+    <Form form={form} layout="inline">
+      {fields.map((field) => (
+        <div key={field.key} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <Form.Item label={field.label} name={field.code}>
+            <Select
+              placeholder={`请选择${field.label}`}
+              style={{ width: 180 }}
+              onChange={(value) => handleChange(field.key, value)}
+            >
+              <Option value="-40℃ ~ +70℃">-40℃ ~ +70℃</Option>
+              <Option value="-55℃ ~ +85℃">-55℃ ~ +85℃</Option>
+              <Option value="custom">其他</Option>
+            </Select>
           </Form.Item>
-          <span> ~ </span>
-          <Form.Item
-            name="customWorkingTemperatureMax"
-            rules={[{ required: true, message: "请输入最高工作温度！" }]}
-          >
-            <Input placeholder="最高温度(℃)" style={{ width: 100 }} />℃
-          </Form.Item>
-        </>
-      )}
 
-      {/* 存储温度 */}
-      <Form.Item
-        label="存储温度"
-        name="storage_temperature"
-        rules={[{ required: true, message: "请选择或输入存储温度！" }]}
-      >
-        <Select
-          placeholder="请选择存储温度"
-          style={{ width: 180 }}
-          onChange={(value) => handleChange("storage_temperature", value)}
-        >
-          <Option value="-55℃ ~ +85℃">-55℃ ~ +85℃</Option>
-          <Option value="-55℃ ~ +125℃">-55℃ ~ +125℃</Option>
-          <Option value="custom">其他</Option>
-        </Select>
-      </Form.Item>
-
-      {/* 自定义存储温度输入框 */}
-      {customFields.storage_temperature && (
-        <>
-          <Form.Item
-            name="customStorageTemperatureMin"
-            rules={[{ required: true, message: "请输入最低存储温度！" }]}
-          >
-            <Input placeholder="最低温度(℃)" style={{ width: 100 }} />℃
-          </Form.Item>
-          <span> ~ </span>
-          <Form.Item
-            name="customStorageTemperatureMax"
-            rules={[{ required: true, message: "请输入最高存储温度！" }]}
-          >
-            <Input placeholder="最高温度(℃)" style={{ width: 100 }} />℃
-          </Form.Item>
-        </>
-      )}
-
-      {/* 提交按钮 */}
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          提交
-        </Button>
-      </Form.Item>
+          {customFields[field.key] && (
+            <>
+              <Form.Item style={{ marginBottom: 0 }}>
+                <Input
+                  placeholder="最低温度(℃)"
+                  style={{ width: 100 }}
+                  value={customValues[field.key][0]}
+                  onChange={(e) => {
+                    const newValues = [...customValues[field.key]];
+                    newValues[0] = e.target.value;
+                    setCustomValues((prev) => ({ ...prev, [field.key]: newValues }));
+                  }}
+                  onBlur={() => handleCustomInputBlur(field.key)}
+                />℃
+              </Form.Item>
+              <span> ~ </span>
+              <Form.Item style={{ marginBottom: 0 }}>
+                <Input
+                  placeholder="最高温度(℃)"
+                  style={{ width: 100 }}
+                  value={customValues[field.key][1]}
+                  onChange={(e) => {
+                    const newValues = [...customValues[field.key]];
+                    newValues[1] = e.target.value;
+                    setCustomValues((prev) => ({ ...prev, [field.key]: newValues }));
+                  }}
+                  onBlur={() => handleCustomInputBlur(field.key)}
+                />℃
+              </Form.Item>
+            </>
+          )}
+        </div>
+      ))}
     </Form>
   );
 };

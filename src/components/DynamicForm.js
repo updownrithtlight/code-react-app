@@ -7,8 +7,8 @@ import OutputForm from "./forms/OutputForm";
 import SpecialForm from "./forms/SpecialForm";
 import IsolationForm from "./forms/IsolationForm";
 import TemperatureForm from "./forms/TemperatureForm";
-import { getFieldDefinitionById } from '../api/fielddefinition/FieldDefinition';
-import { getProjectFieldByProjectId, saveProjectField, deleteProjectField } from '../api/projectfield/ProjectField';
+import { getFieldDefinitionById } from '../api/fielddefinition/FieldDefinitionService';
+import { getProjectFieldByProjectId, saveProjectField, deleteProjectField } from '../api/projectfield/ProjectFieldService';
 
 // ✅ **硬编码组件映射表，使用 `id`**
 const formComponents = {

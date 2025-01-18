@@ -16,7 +16,8 @@ const MaterialListPage = () => {
     model_specification: '',
   });
 
-  const { data, pagination, loading, remove, fetchData , uploadExcel } = useMaterial();
+  const { data,     pagination = { current: 1, pageSize: 10, total: 0 },
+     loading, remove, fetchData , uploadExcel } = useMaterial();
 
   useEffect(() => {
     fetchData(pagination.current, pagination.pageSize, queryParams);
@@ -101,14 +102,14 @@ const MaterialListPage = () => {
       {/* 分页 */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '10px 20px' }}>
         <Pagination
-          current={pagination.current}
-          total={pagination.total}
-          pageSize={pagination.pageSize}
-          onChange={handlePageChange}
-          showSizeChanger
-          pageSizeOptions={[10, 20, 50]}
-          showQuickJumper
-          showTotal={(total) => `共 ${total} 条数据`}
+            current={Number(pagination.current) || 1}
+            total={Number(pagination.total) || 0}
+            pageSize={Number(pagination.pageSize) || 10}
+            onChange={handlePageChange}
+            showSizeChanger
+            pageSizeOptions={["10", "20", "50"]} // 确保是字符串数组
+            showQuickJumper
+            showTotal={(total) => `共 ${total} 条数据`}
         />
       </div>
     </div>

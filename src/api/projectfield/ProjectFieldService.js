@@ -61,3 +61,9 @@ export const getProjectFieldByProjectId = async (project_id) => {
   const response = await apiClient.get(`/project_field/project/${project_id}`);
   return response.data;
 };
+
+
+export const getProjectFieldByProjectIdParentId = async (projectId, parentId) => {
+  const response = await apiClient.get(`/project_field/project/${projectId}/${parentId}`);
+  return response.data;
+};

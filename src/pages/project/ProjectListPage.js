@@ -19,7 +19,7 @@ const ProjectListPage = () => {
 
   const {
     data,
-    pagination,
+    pagination = { current: 1, pageSize: 10, total: 0 },
     loading,
     remove,
     fetchData,
@@ -67,7 +67,6 @@ const ProjectListPage = () => {
   };
 
   const handleMaterialTable = (record) => {
-    console.log('测试',record)
     navigate(`/project/${record.id}/materials`);
    };
 
@@ -98,15 +97,16 @@ const ProjectListPage = () => {
       />
       <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '10px 20px' }}>
         <Pagination
-          current={pagination.current}
-          total={pagination.total}
-          pageSize={pagination.pageSize}
+          current={Number(pagination.current) || 1}
+          total={Number(pagination.total) || 0}
+          pageSize={Number(pagination.pageSize) || 10}
           onChange={handlePageChange}
           showSizeChanger
-          pageSizeOptions={[10, 20, 50]}
+          pageSizeOptions={["10", "20", "50"]} // 确保是字符串数组
           showQuickJumper
           showTotal={(total) => `共 ${total} 条数据`}
-        />
+      />
+
       </div>
     </div>
   );
