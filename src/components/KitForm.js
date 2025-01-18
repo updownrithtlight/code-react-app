@@ -4,11 +4,10 @@ import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId }) => {
+const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId ,onDeleteRow}) => {
   const [form] = Form.useForm();
   const [dataSource, setDataSource] = useState([]);
-
-  // ✅ **初始化时确保 `kitData` 是数组**
+    // ✅ **初始化时确保 `kitData` 是数组**
   useEffect(() => {
     console.log("kitData before formatting:", kitData, "Type:", typeof kitData);
 
@@ -51,21 +50,36 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
   };
 
   // ✅ **删除行并同步更新 `kitData`**
-  const handleRemoveRow = (index) => {
+  const handleRemoveRow = async (index) => {
     console.log('Before remove:', kitData, "Type:", typeof kitData);
 
     // 确保 `kitData` 是数组
     let dataArray = Array.isArray(kitData) ? kitData : (kitData?.data ? Object.values(kitData.data) : []);
 
-    // 过滤掉被删除的行
+    // 获取要删除的项
+    const itemToDelete = dataArray[index];
+
+    // 如果 `itemToDelete` 在数据库中存在（有 ID），则调用 API 删除
+    if (itemToDelete) {
+      console.log("Deleting item:", itemToDelete);
+
+      // 如果 `itemToDelete` 在数据库中存在（有 `field_id` 和 `project_id`），则调用 API 删除
+      if (onDeleteRow && itemToDelete?.field_id && itemToDelete?.project_id) {
+          await onDeleteRow(itemToDelete.field_id, itemToDelete.project_id); // ✅ 传递 `field_id` 和 `project_id`
+      }
+  }
+
+    // 前端 UI 处理：过滤掉被删除的行
     const updatedItems = dataArray.filter((_, i) => i !== index);
 
     console.log('After remove:', updatedItems, "Type:", typeof updatedItems);
 
+    // 更新 UI
     setDataSource(updatedItems);
     setKitFormData(updatedItems); // ✅ **确保 `kitData` 仍然是数组**
     form.setFieldsValue({ items: updatedItems });
-  };
+};
+
 
   const columns = [
     {

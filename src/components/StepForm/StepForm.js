@@ -35,6 +35,25 @@ const StepForm = ({ id }) => {
    } = useProjectField();
   const [projectId, setProjectId] = useState(id || null); // 如果没有 id，则为新建项目
 
+  const handleDeleteRow = async (fieldId, index) => {
+    try {
+        if (fieldId) {
+            console.log(`Deleting field with ID: ${fieldId} from backend...`);
+            await deleteProjectFieldById(projectId,fieldId); // ✅ 调用 API 删除后端数据
+        }
+
+        // **前端同步更新 kitData**
+        const updatedData = kitData.filter((_, i) => i !== index);
+        console.log("Updated kitData after delete:", updatedData);
+
+        setKitFormData(updatedData); // ✅ 确保 kitData 仍然是数组
+    } catch (error) {
+        console.error("Delete failed:", error);
+        message.error("删除失败，请重试");
+    }
+};
+
+
   // 定义表单步骤
   const steps = [
     {
@@ -89,6 +108,8 @@ const StepForm = ({ id }) => {
           productOptions={productOptions}  // 传递 productOptions
           parentId={completeRequirementsParentId}
           projectId={projectId}
+          onDeleteRow={handleDeleteRow} // ✅ 传递删除方法
+
         />
       ),
       loadData: async () => {
