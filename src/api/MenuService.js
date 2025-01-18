@@ -5,6 +5,6 @@ import apiClient from './axiosInterceptor';
  * @returns {Promise} 菜单数据
  */
 export const getMenuApi = async () => {
-  const response = await apiClient.get('/menus'); // 后端接口返回菜单数据
+  const response = await apiClient.get('/menu/menus'); // 后端接口返回菜单数据
   return response.data;
 };

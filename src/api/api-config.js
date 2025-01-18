@@ -7,7 +7,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
  
     if (window.location.port === '3000') {
   //  // 本地开发时直接连接后端
-        baseURL = 'http://localhost:8080/api'; // 本地前端（3000）请求后端（8080）
+        baseURL = 'http://localhost:5000/api'; // 本地前端（3000）请求后端（8080）
     } else {
         baseURL = '/api';
     }

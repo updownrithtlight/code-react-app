@@ -4,7 +4,8 @@ import MainLayout from '../layouts/MainLayout';
 import DynamicRoutes from './DynamicRoutes';
 import LoginPage from '../pages/LoginPage';
 import NoPermissionPage from '../pages/NoPermissionPage';
-import Columns from '../pages/Columns';
+import DocumentFormPage from '../pages/DocumentFormPage';
+import MaterialSearchAreaWrapper from '../pages/MaterialSearchAreaWrapper';
 
 const AppRoutes = () => (
   <Routes>
@@ -23,7 +24,10 @@ const AppRoutes = () => (
 
     {/* 无权限页面 */}
     <Route path="/no-permission" element={<NoPermissionPage />} />
-    <Route path="/columns/:tableId/:tableName" element={<MainLayout><Columns /></MainLayout>} />
+    <Route path="/document_form_page/:id" element={<MainLayout><DocumentFormPage /></MainLayout>} />
+    <Route path="/document_form_page" element={<MainLayout><DocumentFormPage /></MainLayout>} />
+    <Route path="/project/:projectId/materials" element={<MainLayout><MaterialSearchAreaWrapper /></MainLayout>} />
+
 
     {/* 404 页面 */}
     <Route path="*" element={<Navigate to="/no-permission" />} />

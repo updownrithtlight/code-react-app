@@ -12,9 +12,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const data = await loginApi(credentials); // 调用后端 API 登录
-      const { user, accessToken } = data;
-      sessionStorage.setItem('accessToken', accessToken); // 存储 Token
-      dispatch(setAuthState({ isAuthenticated: true, user })); // 更新 Redux 状态
+      console.log('whad',data)
+      const { access_token } = data.data;
+      console.log('whad',access_token)
+      sessionStorage.setItem('access_token', access_token); // 存储 Token
+      dispatch(setAuthState({ isAuthenticated: true })); // 更新 Redux 状态
     } catch (error) {
       console.error('Login failed:', error);
       throw error; // 抛出错误供调用方处理

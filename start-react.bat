@@ -1,5 +1,5 @@
 @echo off
-set "project_path=C:\noneSystem\learn\CodeGenerator\code-front\code-react-app"
+set "project_path=C:\noneSystem\bj\code-react-app"
 
 :menu
 echo ===================================

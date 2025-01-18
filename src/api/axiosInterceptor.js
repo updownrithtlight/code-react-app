@@ -1,6 +1,6 @@
 import axios from 'axios';
 import store from '../state/store';
-import { clearAuthState, } from '../state/authSlice';
+import { clearAuthState, setAuthState} from '../state/authSlice';
 import { createBrowserHistory } from 'history';
 import { baseURL } from './api-config'; // Import baseURL from configuration file
 
@@ -18,9 +18,9 @@ const apiClient = axios.create({
 // Request Interceptor to add Authorization header
 apiClient.interceptors.request.use(
   (config) => {
-    const accessToken = sessionStorage.getItem('accessToken');
-    if (accessToken) {
-      config.headers['Authorization'] = `Bearer ${accessToken}`;
+    const access_token = sessionStorage.getItem('access_token');
+    if (access_token) {
+      config.headers['Authorization'] = `Bearer ${access_token}`;
     }
     return config;
   },
@@ -46,17 +46,16 @@ apiClient.interceptors.response.use(
             {}, // No body needed since cookies are used for Refresh Token
             { withCredentials: true }
           );
-
+          console.log('refresh',refreshResponse.data)
           // Store the new Access Token
-          const { accessToken } = refreshResponse.data;
-          sessionStorage.setItem('accessToken', accessToken);
-
+          const { access_token } = refreshResponse.data.data;
+          sessionStorage.setItem('access_token', access_token);
+          store.dispatch(setAuthState({ isAuthenticated: true })); // 更新 Redux 状态
           // Retry original request
-          originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+          originalRequest.headers['Authorization'] = `Bearer ${access_token}`;
           return apiClient(originalRequest);
         } catch (refreshError) {
           // If refresh fails, clear auth state and redirect to login
-          console.log('哪里走',refreshError)
           store.dispatch(clearAuthState());
           history.push('/login');
           return Promise.reject(refreshError);
