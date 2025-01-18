@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Steps, Button, message } from 'antd';
-import useProjects from '../../hooks/useProject'; // 调用封装的 Hook
 import BasicInfoStep from './BasicInfoStep';
 import DynamicForm from '../DynamicForm'
 import KitForm from '../KitForm'
@@ -9,19 +8,31 @@ import CircuitSelector from '../../pages/CircuitSelector'
 import ProductForm from '../ProductForm'
 import TechnicalManualWordExport from '../TechnicalManualWordExport'
 import ProductSpecificationWordExport from '../ProductSpecificationWordExport'
-
 import InspectionForm from '../forms/InspectionForm'
+import useProjects from '../../hooks/useProject'; // 调用封装的 Hook
+import useProjectField from '../../hooks/useProjectField'; // 调用封装的 Hook
+import useFieldDefinition from '../../hooks/useFieldDefinition'; // 调用封装的 Hook
 
 const StepForm = ({ id }) => {
   const [current, setCurrent] = useState(0);
+  const [completeRequirementsParentId, setCompleteRequirementsParentId] = useState(0);
+  const [structureDimensionsParentId, setStructureDimensionsParentId] = useState(0);
   const [formData, setFormData] = useState({
     basicInfo: {},
     sections: [],
     images: [],
   });
+  const [productOptions, setProductOptions] = useState([]); // 定义 productOptions
+  const [kitData, setKitFormData] = useState({});
 
   // 从 useProjects Hook 获取后端数据操作方法
   const { fetchById, save, } = useProjects();
+  const { fetchFieldDefinitionById } = useFieldDefinition();
+  const {     
+    fetchProjectFieldsByProjectIdParentId,
+    saveProjectFieldData,
+    deleteProjectFieldById,
+   } = useProjectField();
   const [projectId, setProjectId] = useState(id || null); // 如果没有 id，则为新建项目
 
   // 定义表单步骤
@@ -49,8 +60,7 @@ const StepForm = ({ id }) => {
             ...formData.basicInfo,
             projectId,
           });
-          console.log('保存',response.data)
-          if (!projectId) {
+        if (!projectId) {
           setProjectId(response.data.projectId); // 第一次保存时获取 projectId
           }
           message.success('基本信息保存成功');
@@ -64,56 +74,52 @@ const StepForm = ({ id }) => {
       title: '技术参数',
       content: (
         <DynamicForm  projectId={projectId}
-          formData={formData}
-          setFormData={(data) => setFormData({ ...formData, sections: data })}
-        />
+            />
       ),
-      loadData: async () => {
-        if (projectId) {
-          const response = await fetchById(projectId);
-          setFormData((prevData) => ({
-            ...prevData,
-            sections: response.data.sections,
-          }));
-        }
-      },
       handleSubmit: async () => {
-        try {
-          await save({
-            projectId,
-            sections: formData.sections,
-          });
-          message.success('文档标题和内容保存成功');
-          setCurrent(current + 1);
-        } catch (error) {
-          message.error('提交失败，请重试');
-        }
+        setCurrent(current + 1);
       },
     },
     {
       title: '齐套要求',
       content: (
-        <KitForm
-          formData={formData}
-          setFormData={(data) => setFormData({ ...formData, images: data })}
+        <KitForm 
+          kitData={kitData}
+          setKitFormData={(data) => setKitFormData({data })}
+          productOptions={productOptions}  // 传递 productOptions
+          parentId={completeRequirementsParentId}
+          projectId={projectId}
         />
       ),
       loadData: async () => {
         if (projectId) {
-          const response = await fetchById(projectId);
-          setFormData((prevData) => ({
-            ...prevData,
-            images: response.data.images,
+          const  singledata= await fetchFieldDefinitionById('complete_requirements');
+ 
+          setCompleteRequirementsParentId(singledata.data.id)
+          const options = singledata.data.children.map(item => ({
+            id: item.id,
+            value: item.field_name,  // 这里用 field_name 作为 Select 的值
+            label: item.field_name,  // 显示的文本
+            code: item.code,         // 额外属性
+            parent_id: item.parent_id, 
           }));
+          setProductOptions(options);
+          const response = await fetchProjectFieldsByProjectIdParentId(projectId,singledata.data.id);
+          console.log('response fetchProjectFieldsByProjectIdParentId',response.data)
+          setKitFormData(response.data);
+    
         }
       },
       handleSubmit: async () => {
         try {
-          await save({
-            projectId,
-            images: formData.images,
-          });
-          message.success('图片上传成功');
+          const saveData = Array.isArray(kitData) ? kitData : Array.isArray(kitData.data) ? kitData.data : [];
+
+          if (saveData.length === 0) {
+            console.warn('saveProjectFieldData received an empty array, skipping API call.');
+          } else {
+            await saveProjectFieldData(saveData);
+          }
+          message.success('保存成功');
           setCurrent(current + 1);
         } catch (error) {
           message.error('提交失败，请重试');
@@ -130,20 +136,29 @@ const StepForm = ({ id }) => {
       ),
       loadData: async () => {
         if (projectId) {
-          const response = await fetchById(projectId);
-          setFormData((prevData) => ({
-            ...prevData,
-            sections: response.data.sections,
+          const  singledata= await fetchFieldDefinitionById('structure_dimensions');
+          console.log('test singledata',singledata.data.children)
+          setStructureDimensionsParentId(singledata.data.id)
+          const options = singledata.data.children.map(item => ({
+            id: item.id,
+            value: item.field_name,  // 这里用 field_name 作为 Select 的值
+            label: item.field_name,  // 显示的文本
+            code: item.code,         // 额外属性
+            parent_id: item.parent_id, 
           }));
+          setProductOptions(options);
+          const response = await fetchProjectFieldsByProjectIdParentId(projectId,singledata.data.id);
+          setKitFormData(() => ({
+             basicInfo: response.data,
+          }));
+          console.log('init',kitData)
         }
       },
       handleSubmit: async () => {
         try {
-          await save({
-            projectId,
-            sections: formData.sections,
-          });
-          message.success('文档标题和内容保存成功');
+        
+          await saveProjectFieldData(kitData.data.items);
+          message.success('保存成功');
           setCurrent(current + 1);
         } catch (error) {
           message.error('提交失败，请重试');
