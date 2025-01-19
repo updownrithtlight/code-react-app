@@ -52,6 +52,12 @@ export const deleteProjectField = async (projectId, fieldId) => {
 };
 
 
+export const getProjectField = async (projectId, fieldId) => {
+  const response = await apiClient.get(`/project_field/${projectId}/field/${fieldId}`);
+  return response.data;
+};
+
+
 /**
  * 根据 project_id 获取 ProjectField 数据
  * @param {number|string} id - 数据 ID

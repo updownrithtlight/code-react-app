@@ -3,10 +3,10 @@ import { Form, TreeSelect, Card, Upload, InputNumber, Select,Button, Checkbox, R
 import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
+import { getFieldDefinitionById } from '../api/fielddefinition/FieldDefinitionService';
+import { getProjectField, saveProjectField, deleteProjectField } from '../api/projectfield/ProjectFieldService';
 
 const { Option } = Select;
-
-const API_BASE_URL = "http://localhost:5000/api"; // 替换成你的后端地址
 
 const CircuitAndLossForm = ({ projectId }) => {
   const [form] = Form.useForm();
@@ -16,6 +16,8 @@ const CircuitAndLossForm = ({ projectId }) => {
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showInsertLoss, setShowInsertLoss] = useState(false);
   const [environmentalTests, setEnvironmentalTests] = useState([]);
+  const [weightData, setWeightData] = useState({ value: null, unit: "kg" });
+
   const [loading, setLoading] = useState(false);
 
   const treeData = [
@@ -30,21 +32,47 @@ const CircuitAndLossForm = ({ projectId }) => {
       ],
     },
   ];
-
   const environmentalOptions = [
-    { label: '盐雾', value: 'saltSpray' },
-    { label: '霉菌', value: 'mold' },
-    { label: '冲击', value: 'shock' },
-    { label: '振动', value: 'vibration' },
+    {id:62, label: '盐雾', value: 'salt_spray' },
+    {id:63, label: '霉菌', value: 'mold_resistance' },
+    {id:64, label: '冲击', value: 'shock_resistance' },
+    {id:65, label: '振动', value: 'vibration_resistance' },
   ];
+
+  const FIELD_DEFINITIONS = {
+    circuit_diagram: { id: "58", name: "电路原理图", code: "circuit_diagram" },
+    insertion_loss: { id: "59", name: "插入损耗特性", code: "insertion_loss" },
+    weight: { id: "60", name: "重量", code: "weight" },
+    environmental_characteristics: { id: "61", name: "环境特性", code: "environmental_characteristics" },
+
+  };
+
 
   /** **获取数据并回显** */
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/project/${projectId}/circuit-loss`);
-      const data = response.data;
+       const [circuitDiagram, insertionLoss,weight,environmental] = await Promise.all([
+          getFieldDefinitionById("circuit_diagram"),
+          getFieldDefinitionById("insertion_loss"),
+          getFieldDefinitionById("weight"),
+          getFieldDefinitionById("environmental_characteristics"),
+        ]);
 
+       
+        const [circuitDiagramResp,insertionLossResp,weightResp,environmentalResp] = await Promise.all([
+          getProjectField(projectId,circuitDiagram.data.id),
+          getProjectField(projectId,insertionLoss.data.id),
+          getProjectField(projectId,weight.data.id),
+          getProjectField(projectId,environmental.data.id),
+
+        ]);
+        console.log('打印了circuitDiagramResp 吗',circuitDiagramResp)
+        console.log('打印了insertionLossResp吗',insertionLossResp)
+        console.log('打印了weightResp 吗',weightResp)
+        console.log('打印了environmentalResp吗',environmentalResp)
+         const data = circuitDiagramResp.data;
+        
       form.setFieldsValue({
         circuitType: data.circuitType || null,
         weightValue: data.weightValue || null,
@@ -75,8 +103,8 @@ const CircuitAndLossForm = ({ projectId }) => {
     debounce(async (field, value) => {
       try {
         setLoading(true);
-        const payload = { projectId, [field]: value };
-        await axios.post(`${API_BASE_URL}/project/${projectId}/circuit-loss`, payload);
+        console.log('保存了',field,value)
+        await saveProjectField()
         setLoading(false);
       } catch (error) {
         message.error("保存失败，请重试");
@@ -119,6 +147,18 @@ const CircuitAndLossForm = ({ projectId }) => {
     return false;
   };
 
+    /** **拼接重量字符串并保存** */
+    const handleWeightChange = (type, value) => {
+      const updatedWeightData = { ...weightData, [type]: value };
+  
+      setWeightData(updatedWeightData);
+  
+      if (updatedWeightData.value !== null && updatedWeightData.unit) {
+        const weightString = `${updatedWeightData.value}${updatedWeightData.unit}`;
+        debouncedSaveData("weightValue", weightString);
+      }
+    };
+
   return (
     <Form form={form} layout="vertical" style={{ maxWidth: '1000px', margin: '0 auto', background: '#f8f8f8', padding: '20px', borderRadius: '8px' }}>
       <Row gutter={24}>
@@ -149,19 +189,19 @@ const CircuitAndLossForm = ({ projectId }) => {
       <Form.Item>
         <Checkbox checked={showInsertLoss} onChange={(e) => {
           setShowInsertLoss(e.target.checked);
-          debouncedSaveData("insertLoss", e.target.checked);
+          debouncedSaveData("insertion_loss", e.target.checked);
         }}>
           插入损耗特性
         </Checkbox>
       </Form.Item>
 
+      <Divider />
       <Form.Item>
         <Checkbox checked={showWeightInput} onChange={(e) => {
           setShowWeightInput(e.target.checked);
           if (!e.target.checked) {
-            form.resetFields(['weightValue', 'weightUnit']);
+            setWeightData({ value: null, unit: "kg" });
             debouncedSaveData("weightValue", null);
-            debouncedSaveData("weightUnit", null);
           }
         }}>
           重量
@@ -172,12 +212,22 @@ const CircuitAndLossForm = ({ projectId }) => {
         <Row gutter={24}>
           <Col span={12}>
             <Form.Item name="weightValue" label="重量">
-              <InputNumber min={1} max={1000} style={{ width: '50%' }} onChange={(value) => debouncedSaveData("weightValue", value)} />
+              <InputNumber
+                min={1}
+                max={1000}
+                style={{ width: '100%' }}
+                value={weightData.value}
+                onChange={(value) => handleWeightChange("value", value)}
+              />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item name="weightUnit" label="单位">
-              <Select defaultValue="g" style={{ width: '50%' }} onChange={(value) => debouncedSaveData("weightUnit", value)}>
+              <Select
+                style={{ width: '100%' }}
+                value={weightData.unit}
+                onChange={(value) => handleWeightChange("unit", value)}
+              >
                 <Option value="g">g</Option>
                 <Option value="kg">kg</Option>
               </Select>
@@ -191,7 +241,7 @@ const CircuitAndLossForm = ({ projectId }) => {
       <Form.Item name="environmentalTests" label="环境特性">
         <Checkbox.Group options={environmentalOptions} onChange={(values) => {
           setEnvironmentalTests(values);
-          debouncedSaveData("environmentalTests", values);
+          debouncedSaveData("environmental_characteristics", values);
         }} value={environmentalTests} />
       </Form.Item>
     </Form>

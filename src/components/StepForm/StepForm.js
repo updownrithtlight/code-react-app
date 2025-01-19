@@ -181,7 +181,7 @@ const StepForm = ({ id }) => {
     },
     {
       title: '综合',
-      content: <CircuitAndLossForm formData={formData} setFormData={setFormData} />,
+      content: <CircuitAndLossForm   projectId={projectId} />,
       handleSubmit: async () => setCurrent(current + 1),
     },
     {
