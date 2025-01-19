@@ -4,15 +4,12 @@ import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId ,onDeleteRow}) => {
+const KitForm = ({ formKitData, setFormKitData, productOptions, parentId, projectId, onDeleteRow }) => {
   const [form] = Form.useForm();
   const [dataSource, setDataSource] = useState([]);
-    // ✅ **初始化时确保 `kitData` 是数组**
-  useEffect(() => {
-    console.log("kitData before formatting:", kitData, "Type:", typeof kitData);
 
-    // 强制 `kitData` 变成数组，避免对象和数组的转换问题
-    const formattedData = (Array.isArray(kitData) ? kitData : (kitData?.data ? Object.values(kitData.data) : []))
+  useEffect(() => {
+    const formattedData = (Array.isArray(formKitData) ? formKitData : (formKitData?.data ? Object.values(formKitData.data) : []))
       .map((item, index) => ({
         key: index,
         productName: productOptions.find(p => p.code === item.code)?.label || "",
@@ -28,9 +25,8 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
     setDataSource(formattedData);
     form.setFieldsValue({ items: formattedData });
 
-  }, [kitData, productOptions]);
+  }, [formKitData, productOptions]);
 
-  // ✅ **新增行**
   const handleAddRow = () => {
     const newRow = {
       key: dataSource.length,
@@ -46,55 +42,40 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
 
     const updatedData = [...dataSource, newRow];
     setDataSource(updatedData);
-    setKitFormData(updatedData);
+    setFormKitData(updatedData);
   };
 
-  // ✅ **删除行并同步更新 `kitData`**
   const handleRemoveRow = async (index) => {
-    console.log('Before remove:', kitData, "Type:", typeof kitData);
-
-    // 确保 `kitData` 是数组
-    let dataArray = Array.isArray(kitData) ? kitData : (kitData?.data ? Object.values(kitData.data) : []);
-
-    // 获取要删除的项
+    let dataArray = Array.isArray(formKitData) ? formKitData : (formKitData?.data ? Object.values(formKitData.data) : []);
     const itemToDelete = dataArray[index];
 
-    // 如果 `itemToDelete` 在数据库中存在（有 ID），则调用 API 删除
-    if (itemToDelete) {
-      console.log("Deleting item:", itemToDelete);
+    if (itemToDelete && onDeleteRow && itemToDelete?.field_id && itemToDelete?.project_id) {
+      await onDeleteRow(itemToDelete.field_id, itemToDelete.project_id);
+    }
 
-      // 如果 `itemToDelete` 在数据库中存在（有 `field_id` 和 `project_id`），则调用 API 删除
-      if (onDeleteRow && itemToDelete?.field_id && itemToDelete?.project_id) {
-          await onDeleteRow(itemToDelete.field_id, itemToDelete.project_id); // ✅ 传递 `field_id` 和 `project_id`
-      }
-  }
-
-    // 前端 UI 处理：过滤掉被删除的行
     const updatedItems = dataArray.filter((_, i) => i !== index);
-
-    console.log('After remove:', updatedItems, "Type:", typeof updatedItems);
-
-    // 更新 UI
     setDataSource(updatedItems);
-    setKitFormData(updatedItems); // ✅ **确保 `kitData` 仍然是数组**
+    setFormKitData(updatedItems);
     form.setFieldsValue({ items: updatedItems });
-};
-
+  };
 
   const columns = [
     {
       title: "序号",
       dataIndex: "index",
       key: "index",
+      width: 60,
+      align: "center",
       render: (_, __, index) => index + 1,
     },
     {
       title: "产品名称",
       dataIndex: "productName",
       key: "productName",
+      width: 200,
       render: (_, record) => (
-        <Form.Item name={["items", record.key, "productName"]} rules={[{ required: true, message: "请选择产品名称" }]}>
-          <Select placeholder="选择产品名称">
+        <Form.Item name={["items", record.key, "productName"]} rules={[{ required: true, message: "请选择产品名称" }]} style={{ marginBottom: 0 }}>
+          <Select placeholder="选择产品" style={{ width: "100%" }}>
             {productOptions.map((item) => (
               <Option key={item.id} value={item.label}>
                 {item.label}
@@ -108,9 +89,10 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
       title: "产品代号",
       dataIndex: "product_code",
       key: "product_code",
+      width: 150,
       render: (_, record) => (
-        <Form.Item name={["items", record.key, "product_code"]}>
-          <Input placeholder="输入产品代号" />
+        <Form.Item name={["items", record.key, "product_code"]} style={{ marginBottom: 0 }}>
+          <Input placeholder="输入代号" style={{ width: "100%" }} />
         </Form.Item>
       ),
     },
@@ -118,9 +100,10 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
       title: "数量",
       dataIndex: "quantity",
       key: "quantity",
+      width: 100,
       render: (_, record) => (
-        <Form.Item name={["items", record.key, "quantity"]} rules={[{ required: true, message: "请输入数量" }]}>
-          <Input placeholder="输入数量" />
+        <Form.Item name={["items", record.key, "quantity"]} rules={[{ required: true, message: "请输入数量" }]} style={{ marginBottom: 0 }}>
+          <Input placeholder="输入数量" style={{ width: "100%" }} />
         </Form.Item>
       ),
     },
@@ -128,9 +111,10 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
       title: "备注",
       dataIndex: "remarks",
       key: "remarks",
+      width: 200,
       render: (_, record) => (
-        <Form.Item name={["items", record.key, "remarks"]}>
-          <Input placeholder="输入备注" />
+        <Form.Item name={["items", record.key, "remarks"]} style={{ marginBottom: 0 }}>
+          <Input placeholder="输入备注" style={{ width: "100%" }} />
         </Form.Item>
       ),
     },
@@ -138,8 +122,10 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
       title: "操作",
       dataIndex: "operation",
       key: "operation",
+      width: 80,
+      align: "center",
       render: (_, __, index) => (
-        <MinusCircleOutlined onClick={() => handleRemoveRow(index)} style={{ color: "red", marginLeft: 8 }} />
+        <MinusCircleOutlined onClick={() => handleRemoveRow(index)} style={{ color: "red", cursor: "pointer" }} />
       ),
     },
   ];
@@ -149,8 +135,6 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
       form={form}
       layout="vertical"
       onValuesChange={(changedValues, allValues) => {
-        console.log("onValuesChange - allValues:", allValues);
-
         const updatedValues = (allValues.items || []).map(item => {
           const product = productOptions.find(p => p.value === item.productName);
           return {
@@ -162,10 +146,17 @@ const KitForm = ({ kitData, setKitFormData, productOptions, parentId, projectId 
           };
         });
 
-        setKitFormData(updatedValues); // ✅ 确保 `kitData` 始终是数组
+        setFormKitData(updatedValues);
       }}
     >
-      <Table columns={columns} dataSource={dataSource} pagination={false} bordered rowKey="key" />
+      <Table
+        columns={columns}
+        dataSource={dataSource}
+        pagination={false}
+        bordered
+        rowKey="key"
+        size="middle"
+      />
       <Button type="dashed" onClick={handleAddRow} style={{ width: "100%", marginTop: 16 }}>
         <PlusOutlined /> 添加行
       </Button>

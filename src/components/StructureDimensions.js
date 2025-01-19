@@ -1,90 +1,164 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Button, Table, Upload, Checkbox } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Form, Input, Select, Upload, Checkbox, Row, Col, Modal, message } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-const StructureDimensions = ({ formData, setFormData }) => {
+const StructureDimensions = ({ 
+  formStructureData, 
+  setFormStructureData, 
+  projectId, 
+  parentId, 
+  onRemove 
+}) => {
   const [form] = Form.useForm();
+  const [fileList, setFileList] = useState([]);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
 
+  // 预定义字段信息
+  const FIELD_DEFINITIONS = {
+    dimensions: { id: "52", name: "外形尺寸", code: "dimensions" },
+    housing_material: { id: "53", name: "壳体材质", code: "housing_material" },
+    surface_treatment: { id: "54", name: "生产工艺", code: "surface_treatment" },
+    manufacturing_process: { id: "55", name: "表面处理", code: "manufacturing_process" },
+    input_terminal: { id: "56", name: "输入端引出方式", code: "input_terminal" },
+    output_terminal: { id: "57", name: "输出端引出方式", code: "output_terminal" }
+  };
 
-   // 当 formData 更新时，设置表单值
-    useEffect(() => {
-      if (formData && formData.basicInfo) {
-        form.setFieldsValue(formData.basicInfo);
+  useEffect(() => {
+    if (formStructureData) {
+      // ✅ 只取 `custom_value` 作为 Form 的 `setFieldsValue` 赋值
+      const formValues = Object.keys(formStructureData).reduce((acc, key) => {
+        acc[key] = formStructureData[key].custom_value;
+        return acc;
+      }, {});
+      form.setFieldsValue(formValues);
+
+      // ✅ 处理 `dimensions` 图片
+      if (formStructureData.dimensions?.custom_value) {
+        setFileList([
+          {
+            uid: '-1',
+            url: formStructureData.dimensions.custom_value,
+            name: '已上传图片',
+            status: 'done'
+          }
+        ]);
       }
-    }, [formData]);
+    }
+  }, [formStructureData]);
 
-  // 固定行数据
-  const fixedRows = [
-    { key: 52, parameter: "外形尺寸", type: "customInput", description: "插入图片" },
-    { key: 53, parameter: "壳体材质", type: "selectInput", options: ["冷轧钢板", "不锈钢 304", "不锈钢 316L", "5A06 铝合金", "6061 铝合金", "7075 铝合金"] },
-    { key: 54, parameter: "表面处理", type: "multiSelectInput", options: ["电镀镍（亮处理）", "喷砂", "导电氧化本色", "导电氧化黄色", "拉丝", "化学镀镍"] }, // ✅ 改为多选
-    { key: 55, parameter: "生产工艺", type: "selectInput", options: ["钣金", "铝铸"] },
-    { key: 56, parameter: "输入端引出方式", type: "customInput" },
-    { key: 57, parameter: "输出端引出方式", type: "customInput" },
-  ];
+  // ✅ 处理表单字段变化
+  const handleFieldChange = (fieldKey, value) => {
+    setFormStructureData(prevData => ({
+      ...prevData,
+      [fieldKey]: {
+        field_id: FIELD_DEFINITIONS[fieldKey].id,
+        code: FIELD_DEFINITIONS[fieldKey].code,
+        custom_value: value,
+        parent_id: parentId,
+        project_id: projectId
+      }
+    }));
+  };
 
-  // 表头定义
-  const columns = [
-    {
-      title: "序号",
-      dataIndex: "key",
-      key: "key",
-    },
-    {
-      title: "项目名称",
-      dataIndex: "parameter",
-      key: "parameter",
-    },
-    {
-      title: "数据输入",
-      dataIndex: "input",
-      key: "input",
-      render: (_, record) => {
-        if (record.type === "selectInput") {
-          return (
-            <Form.Item name={["items", record.key, "input"]} style={{ margin: 0 }}>
-              <Select placeholder="选择或输入内容">
-                {record.options.map((option) => (
-                  <Option key={option} value={option}>
-                    {option}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          );
-        } else if (record.type === "multiSelectInput") {
-          return (
-            <Form.Item name={["items", record.key, "input"]} style={{ margin: 0 }}>
-              <Checkbox.Group options={record.options} />
-            </Form.Item>
-          );
-        } else if (record.parameter === "外形尺寸") {
-          return (
-            <Form.Item name={["items", record.key, "input"]} style={{ margin: 0 }}>
-              <Upload listType="picture" beforeUpload={() => false}>
-                <Button icon={<UploadOutlined />}>上传图片</Button>
-              </Upload>
-            </Form.Item>
-          );
-        } else {
-          return (
-            <Form.Item name={["items", record.key, "input"]} style={{ margin: 0 }}>
-              <Input placeholder="请输入内容" />
-            </Form.Item>
-          );
-        }
-      },
-    },
-  ];
-
-
+  // ✅ 处理图片删除
+  const handleRemove = (file) => {
+    onRemove(file.response.data.fileName);
+    handleFieldChange("dimensions", null);
+  };
 
   return (
-    <Form form={form}  layout="vertical"
-    onValuesChange={(changedValues, allValues) => setFormData(allValues)}>
-      <Table columns={columns} dataSource={fixedRows} pagination={false} bordered rowKey="key" />
+    <Form
+      form={form}
+      layout="vertical"
+      onValuesChange={(changedValues, allValues) => {
+        Object.keys(changedValues).forEach((key) => {
+          handleFieldChange(key, changedValues[key]);
+        });
+      }}
+      style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px', background: '#fff', borderRadius: '8px' }}
+    >
+      <Row gutter={24}>
+        <Col span={24}>
+          <Form.Item label="外形尺寸">
+            <Upload
+              action="http://127.0.0.1:5000/api/file/upload"
+              listType="picture-card"
+              fileList={fileList}
+              onChange={({ file, fileList }) => {
+                if (file.status === "done") {
+                  const response = file.response;
+                  if (response && response.success) {
+                    handleFieldChange("dimensions", response.data.url);
+                  } else {
+                    message.error(response.message || "上传失败");
+                  }
+                }
+                setFileList([...fileList]);
+              }}
+              onPreview={file => {
+                setPreviewImage(file.url);
+                setPreviewVisible(true);
+              }}
+              onRemove={handleRemove}
+              accept="image/*"
+            >
+              {fileList.length >= 1 ? null : (
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>上传图片</div>
+                </div>
+              )}
+            </Upload>
+            <Modal visible={previewVisible} footer={null} onCancel={() => setPreviewVisible(false)}>
+              <img alt="预览" style={{ width: '100%' }} src={previewImage} />
+            </Modal>
+          </Form.Item>
+        </Col>
+      </Row>
+
+      <Row gutter={24}>
+        <Col span={12}>
+          <Form.Item label="壳体材质" name="housing_material">
+            <Select placeholder="选择壳体材质" style={{ width: '100%' }}>
+              <Option value="冷轧钢板">冷轧钢板</Option>
+              <Option value="不锈钢 304">不锈钢 304</Option>
+              <Option value="不锈钢 316L">不锈钢 316L</Option>
+            </Select>
+          </Form.Item>
+        </Col>
+        <Col span={12}>
+          <Form.Item label="生产工艺" name="surface_treatment">
+            <Select placeholder="选择生产工艺" style={{ width: '100%' }}>
+              <Option value="钣金">钣金</Option>
+              <Option value="铝铸">铝铸</Option>
+            </Select>
+          </Form.Item>
+        </Col>
+      </Row>
+
+      <Row gutter={24}>
+        <Col span={24}>
+          <Form.Item label="表面处理" name="manufacturing_process">
+            <Checkbox.Group options={["电镀镍（亮处理）", "喷砂", "导电氧化本色", "导电氧化黄色", "拉丝", "化学镀镍"]} />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      <Row gutter={24}>
+        <Col span={12}>
+          <Form.Item label="输入端引出方式" name="input_terminal">
+            <Input placeholder="请输入输入端引出方式" />
+          </Form.Item>
+        </Col>
+        <Col span={12}>
+          <Form.Item label="输出端引出方式" name="output_terminal">
+            <Input placeholder="请输入输出端引出方式" />
+          </Form.Item>
+        </Col>
+      </Row>
     </Form>
   );
 };
