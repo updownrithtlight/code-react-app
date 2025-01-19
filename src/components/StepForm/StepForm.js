@@ -4,10 +4,10 @@ import BasicInfoStep from './BasicInfoStep';
 import DynamicForm from '../DynamicForm';
 import KitForm from '../KitForm';
 import StructureDimensions from '../StructureDimensions';
-import CircuitSelector from '../CircuitSelector';
-import ProductForm from '../ProductForm';
+import TechnicalFeatures from '../TechnicalFeatures';
 import TechnicalManualWordExport from '../TechnicalManualWordExport';
 import ProductSpecificationWordExport from '../ProductSpecificationWordExport';
+import CircuitAndLossForm from '../CircuitAndLossForm';
 import InspectionForm from '../forms/InspectionForm';
 import useProjects from '../../hooks/useProject';
 import useProjectField from '../../hooks/useProjectField';
@@ -18,7 +18,7 @@ const StepForm = ({ id }) => {
   const [current, setCurrent] = useState(0);
   const [projectId, setProjectId] = useState(id || null);
   const [formData, setFormData] = useState({
-    basicInfo: {},
+    
   });
   const [productOptions, setProductOptions] = useState([]); // 定义 productOptions
 
@@ -45,15 +45,11 @@ const StepForm = ({ id }) => {
         message.error("删除失败，请重试");
     }
 };
-
-
-
   // 图片删除
   const handleRemove = async (fileName) => {
       console.log("图片删除 fileName  delete:", fileName);
       deleteFile(fileName)
   };
-
   // 步骤定义
   const steps = [
     {
@@ -62,12 +58,14 @@ const StepForm = ({ id }) => {
       loadData: async () => {
         if (projectId) {
           const response = await fetchById(projectId);
-          setFormData((prevData) => ({ ...prevData, basicInfo: response.data }));
+          setFormData(response.data);
         }
       },
       handleSubmit: async () => {
+
+        console.error("formData 保存:", formData);
         try {
-          const response = await save({ ...formData.basicInfo, projectId });
+          const response = await save({ ...formData, projectId });
           if (!projectId) setProjectId(response.data.projectId);
           message.success('基本信息保存成功');
           setCurrent(current + 1);
@@ -144,8 +142,6 @@ const StepForm = ({ id }) => {
       
             // 获取字段数据
             const response = await fetchProjectFieldsByProjectIdParentId(projectId, structureDimensions.data.id);
-            console.log("fetchProjectFieldsByProjectIdParentId:", response);
-      
             // ✅ 处理数据，将数组转换为对象格式
             const parsedData = response.data.reduce((acc, item) => {
               acc[item.code] = { ...item };
@@ -184,13 +180,13 @@ const StepForm = ({ id }) => {
       },
     },
     {
-      title: '电路图',
-      content: <CircuitSelector formData={formData} setFormData={setFormData} />,
+      title: '综合',
+      content: <CircuitAndLossForm formData={formData} setFormData={setFormData} />,
       handleSubmit: async () => setCurrent(current + 1),
     },
     {
-      title: '插入损耗特性/重量/环境特性',
-      content: <ProductForm formData={formData} setFormData={setFormData} />,
+      title: '产品技术特点/使用注意事项',
+      content: <TechnicalFeatures formData={formData} setFormData={setFormData} />,
       handleSubmit: async () => setCurrent(current + 1),
     },
     {
