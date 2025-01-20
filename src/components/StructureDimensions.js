@@ -65,7 +65,10 @@ const StructureDimensions = ({
 
   // ✅ 处理图片删除
   const handleRemove = (file) => {
-    onRemove(file.response.data.fileName);
+    const filename = file.url.split('/').pop();
+    console.log('dimensions---------',filename)
+
+    onRemove(filename);
     handleFieldChange("dimensions", null);
   };
 

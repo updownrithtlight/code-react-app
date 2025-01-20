@@ -30,11 +30,55 @@ const CircuitAndLossForm = ({ projectId }) => {
     { title: '无', value: -1 },
     { title: '手绘', value: -2 },
     {
+      id: 70,
       title: '直流',
-      value: 70,
       children: [
-        { id: 75, title: '10电路（直流一级滤波）', value: 75, img: '/circuits/1.png' },
-        { id: 76, title: '12电路（直流一级滤波）', value: 76, img: '/circuits/2.png' },
+        { id: 75, title: '10电路（直流一级滤波）', img: '/circuits/1.png' },
+        { id: 76, title: '12电路（直流一级滤波）', img: '/circuits/2.png' },
+        { id: 77, title: '14电路（直流一级滤波）', img: '/circuits/3.png' },
+        { id: 78, title: '16电路（直流一级滤波）', img: '/circuits/4.png' },
+        { id: 79, title: '18电路（直流一级滤波）', img: '/circuits/5.png' },
+        { id: 80, title: '20电路（直流一共一差滤波）', img: '/circuits/6.png' },
+        { id: 81, title: '22电路（直流两共滤波）', img: '/circuits/7.png' },
+        { id: 82, title: '24电路（直流一共单差滤波）', img: '/circuits/9.png' },
+        { id: 83, title: '32电路（直流两共一差滤波）', img: '/circuits/9.png' },
+      ],
+    },
+    {
+      id: 71,
+      title: '交流单相',
+      children: [
+        { id: 84, title: '11电路（交流一级滤波）', img: '/circuits/10.png' },
+        { id: 85, title: '13电路（交流一级滤波）', img: '/circuits/11.png' },
+        { id: 86, title: '17电路（交流一级滤波）', img: '/circuits/12.png' },
+        { id: 87, title: '21电路（交流一共一差滤波）', img: '/circuits/13.png' },
+        { id: 88, title: '23电路（交流两共滤波）', img: '/circuits/14.png' },
+        { id: 89, title: '33电路（交流两共一差滤波）', img: '/circuits/15.png' },
+      ],
+    },
+    {
+      id: 72,
+      title: '交流三相三线',
+      children: [
+        { id: 90, title: '53电路（一级滤波）', img: '/circuits/16.png' },
+        { id: 91, title: '63电路（一共一差滤波）', img: '/circuits/17.png' },
+        { id: 92, title: '69电路（一共一差滤波）', img: '/circuits/18.png' },
+      ],
+    },
+    {
+      id: 73,
+      title: '交流三相四线',
+      children: [
+        { id: 93, title: '55电路（一级滤波）', img: '/circuits/19.png' },
+        { id: 94, title: '59电路（一级滤波）', img: '/circuits/20.png' },
+        { id: 95, title: '65电路（一共一差滤波）', img: '/circuits/21.png' },
+      ],
+    },
+    {
+      id: 74,
+      title: '脉冲群抑制',
+      children: [
+        { id: 96, title: '72电路（三差滤波）', img: '/circuits/22.png' },
       ],
     },
   ];
