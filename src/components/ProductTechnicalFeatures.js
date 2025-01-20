@@ -6,12 +6,13 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-ki
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// 注意事项数据
+
 const noticeOptions = [
-  { id: 1, label: "产品应存放在环境温度为-10℃～40℃，相对湿度小于80%，周围环境无酸性、碱性及其他有害杂质的库房中。" },
-  { id: 2, label: "产品在设备中安装完成后，建议引出端连接处使用三防漆、热缩管等方式作密封处理，提高系统抗高浓度盐雾、水汽等恶劣环境的能力。" },
-  { id: 3, label: "用户应将产品外壳与用户金属机箱可靠电气搭接，并尽可能降低接地阻抗。" },
+  { id: 1, label: "产品尺寸小，外观美观。" },
+  { id: 2, label: "产品的元器件和外壳可以实现100%国产化。" },
+  { id: 3, label: "产品内部电子元器件的质量等级为普军级及以上等级。" },
 ];
+
 
 // **单个可拖拽列表项**
 const SortableItem = ({ item, index }) => {
@@ -53,7 +54,7 @@ const SortableItem = ({ item, index }) => {
 };
 
 
-const NoticeSelection = () => {
+const ProductTechnicalFeatures = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [checkedItems, setCheckedItems] = useState([]);
 
@@ -76,7 +77,7 @@ const NoticeSelection = () => {
   return (
     <div
       style={{
-        maxWidth: "600px",
+        maxWidth: "1000px",
         margin: "0 auto",
         padding: "20px",
         background: "#fff",
@@ -84,7 +85,7 @@ const NoticeSelection = () => {
         boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
       }}
     >
-      <h3>使用注意事项</h3>
+      <h3>产品技术特点</h3>
 
       {/* 复选框选择 */}
       <Checkbox.Group
@@ -110,4 +111,6 @@ const NoticeSelection = () => {
   );
 };
 
-export default NoticeSelection;
+export default ProductTechnicalFeatures;
+
+

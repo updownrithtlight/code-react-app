@@ -10,8 +10,7 @@ const BasicInfoStep = ({ formData, setFormData }) => {
   });
 
   useEffect(() => {
-    console.log('你在变化吗',formData)
-    if (formData && formData) {
+   if (formData && formData) {
       form.setFieldsValue(formData);
     }
   }, [formData]);

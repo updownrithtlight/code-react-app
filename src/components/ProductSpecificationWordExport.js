@@ -23,7 +23,7 @@ const WordExport = ({ projectId }) => {
           fontWeight: "bold",
         }}
       >
-        生成并下载 Word 文档
+        生成产品规范并下载 Word 文档
       </Button>
     </div>
   );

@@ -17,6 +17,12 @@ const CircuitAndLossForm = ({ projectId }) => {
   const [showInsertLoss, setShowInsertLoss] = useState(false);
   const [environmentalTests, setEnvironmentalTests] = useState([]);
   const [weightData, setWeightData] = useState({ value: null, unit: "kg" });
+  const [showEnvironmentalTests, setShowEnvironmentalTests] = useState(false);
+
+  const [circuitDiagramId, setCircuitDiagramId] = useState(59);
+  const [insertLossId, setInsertLossId] = useState(59);
+  const [weightId, setWeightId] = useState(59);
+  const [environmentalId, setEnvironmentalId] = useState(59);
 
   const [loading, setLoading] = useState(false);
 
@@ -39,15 +45,6 @@ const CircuitAndLossForm = ({ projectId }) => {
     {id:65, label: '振动', value: 'vibration_resistance' },
   ];
 
-  const FIELD_DEFINITIONS = {
-    circuit_diagram: { id: "58", name: "电路原理图", code: "circuit_diagram" },
-    insertion_loss: { id: "59", name: "插入损耗特性", code: "insertion_loss" },
-    weight: { id: "60", name: "重量", code: "weight" },
-    environmental_characteristics: { id: "61", name: "环境特性", code: "environmental_characteristics" },
-
-  };
-
-
   /** **获取数据并回显** */
   const fetchData = async () => {
     try {
@@ -58,9 +55,12 @@ const CircuitAndLossForm = ({ projectId }) => {
           getFieldDefinitionById("weight"),
           getFieldDefinitionById("environmental_characteristics"),
         ]);
-
-       
+        setInsertLossId(insertionLoss.data.id);
+        setCircuitDiagramId(circuitDiagram.data.id);
+        setWeightId(weight.data.id);
+        setEnvironmentalId(environmental.data.id);
         const [circuitDiagramResp,insertionLossResp,weightResp,environmentalResp] = await Promise.all([
+        
           getProjectField(projectId,circuitDiagram.data.id),
           getProjectField(projectId,insertionLoss.data.id),
           getProjectField(projectId,weight.data.id),
@@ -68,28 +68,36 @@ const CircuitAndLossForm = ({ projectId }) => {
 
         ]);
         console.log('打印了circuitDiagramResp 吗',circuitDiagramResp)
-        console.log('打印了insertionLossResp吗',insertionLossResp)
+        console.log('打印了insertionLossResp吗',insertionLossResp.data.is_checked)
         console.log('打印了weightResp 吗',weightResp)
         console.log('打印了environmentalResp吗',environmentalResp)
-         const data = circuitDiagramResp.data;
+        const data = circuitDiagramResp.data;
+
+        let weightString = weightResp.data?.custom_value || "";  // 例如 "33kg"
+        let weightValue = parseFloat(weightString);  // 提取数值 33
+        let weightUnit = weightString.replace(/[0-9]/g, '').trim() || "kg"; // 提取单位 "kg"
+    
+        setWeightData({ value: weightValue || null, unit: weightUnit });
         
       form.setFieldsValue({
-        circuitType: data.circuitType || null,
-        weightValue: data.weightValue || null,
-        weightUnit: data.weightUnit || "g",
-        insertLoss: data.insertLoss || false,
-        environmentalTests: data.environmentalTests || [],
+        circuitType: data.custom_value || null,
+        weightValue: weightValue || null,
+        weightUnit:  weightUnit  || "g",
+        insertLoss:  insertionLossResp.data.is_checked || false,
+        environmentalTests: environmentalResp.data.custom_value || [],
       });
 
       setSelectedCircuit(
-        data.circuitType ? treeData.flatMap(p => p.children || []).find(item => item.value === data.circuitType) : null
+        data.custom_value ? treeData.flatMap(p => p.children || []).find(item => item.value === data.custom_value) : null
       );
 
-      setIsHandDrawn(data.circuitType === -2);
-      if (data.handDrawnImage) setUploadedImage(data.handDrawnImage);
-      setShowWeightInput(!!data.weightValue);
-      setShowInsertLoss(!!data.insertLoss);
-      setEnvironmentalTests(data.environmentalTests || []);
+      setIsHandDrawn(data.custom_value === -2);
+      if (data.image_path) setUploadedImage(data.image_path);
+      setShowWeightInput(!!weightString);
+      setShowInsertLoss(!!insertionLossResp.data.is_checked);
+      setShowEnvironmentalTests(environmentalResp.data.is_checked)
+      console.log('array??',environmentalResp.data.custom_value)
+      setEnvironmentalTests(environmentalResp.data.custom_value || []);
 
       setLoading(false);
     } catch (error) {
@@ -100,12 +108,22 @@ const CircuitAndLossForm = ({ projectId }) => {
 
   /** **防抖处理**保存数据 */
   const debouncedSaveData = useCallback(
-    debounce(async (field, value) => {
+    debounce(async (code, key,column,value,flag) => {
       try {
         setLoading(true);
-        console.log('保存了',field,value)
-        await saveProjectField()
-        setLoading(false);
+        console.log('保存了',code,key,column,value,flag)
+        if(flag){
+          await saveProjectField({
+            project_id: projectId,
+            field_id: key,
+            [column]: value,
+            code: code
+          });
+
+        }else{
+          await deleteProjectField(projectId,key)
+        }
+      setLoading(false);
       } catch (error) {
         message.error("保存失败，请重试");
         setLoading(false);
@@ -119,10 +137,12 @@ const CircuitAndLossForm = ({ projectId }) => {
   }, [projectId]);
 
   const handleCircuitChange = (value) => {
+    let flag =true;
     if (value === -1) {
       setSelectedCircuit(null);
       setUploadedImage(null);
       setIsHandDrawn(false);
+      flag =false;
     } else if (value === -2) {
       setSelectedCircuit(null);
       setUploadedImage(null);
@@ -134,17 +154,25 @@ const CircuitAndLossForm = ({ projectId }) => {
       setIsHandDrawn(false);
     }
     form.setFieldsValue({ circuitType: value });
-    debouncedSaveData("circuitType", value);
+    debouncedSaveData("circuit_diagram",circuitDiagramId,"custom_value", value,flag);
   };
 
-  const handleUpload = (file) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      setUploadedImage(reader.result);
-      debouncedSaveData("handDrawnImage", reader.result);
-    };
-    reader.readAsDataURL(file);
-    return false;
+
+  const handleUpload = async ({ file }) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/api/file/upload", formData);
+      if (response.data.success) {
+        const fileUrl = response.data.data.url;
+        setUploadedImage(fileUrl);
+        debouncedSaveData("circuit_diagram", circuitDiagramId, "image_path", fileUrl, true);
+      } else {
+        message.error("上传失败，请重试");
+      }
+    } catch (error) {
+      message.error("上传错误");
+    }
   };
 
     /** **拼接重量字符串并保存** */
@@ -155,8 +183,13 @@ const CircuitAndLossForm = ({ projectId }) => {
   
       if (updatedWeightData.value !== null && updatedWeightData.unit) {
         const weightString = `${updatedWeightData.value}${updatedWeightData.unit}`;
-        debouncedSaveData("weightValue", weightString);
+        debouncedSaveData("weight",weightId,"custom_value", weightString,true);
       }
+    };
+
+    const handleEnvOptions = (values) => {
+        debouncedSaveData("environmental_characteristics", 
+        environmentalId,"custom_value", values,true);
     };
 
   return (
@@ -164,14 +197,16 @@ const CircuitAndLossForm = ({ projectId }) => {
       <Row gutter={24}>
         <Col span={12}>
           <Form.Item name="circuitType" label="选择滤波电路类型">
-            <TreeSelect style={{ width: '100%' }} treeData={treeData} placeholder="请选择" treeDefaultExpandAll onChange={handleCircuitChange} />
+            <TreeSelect style={{ width: "100%" }} treeData={treeData} placeholder="请选择" treeDefaultExpandAll onChange={handleCircuitChange} />
           </Form.Item>
         </Col>
         {isHandDrawn && (
           <Col span={12}>
             <Form.Item label="上传手绘电路图">
-              <Upload beforeUpload={handleUpload} listType="picture" showUploadList={false}>
-               <Button><UploadOutlined /> 上传手绘电路图</Button> 
+              <Upload customRequest={handleUpload} listType="picture" showUploadList={false}>
+                <Button>
+                  <UploadOutlined /> 上传手绘电路图
+                </Button>
               </Upload>
             </Form.Item>
           </Col>
@@ -179,29 +214,29 @@ const CircuitAndLossForm = ({ projectId }) => {
       </Row>
 
       {(selectedCircuit || uploadedImage) && (
-        <Card title="电路图预览" style={{ marginBottom: 20, textAlign: 'center' }}>
-          <img alt="电路图" src={uploadedImage || selectedCircuit?.img} style={{ width: '100%', maxWidth: '400px', height: 'auto', objectFit: 'contain' }} />
+        <Card title="电路图预览" style={{ marginBottom: 20, textAlign: "center" }}>
+          <img alt="电路图" src={uploadedImage || selectedCircuit?.img} style={{ width: "100%", maxWidth: "400px", height: "auto", objectFit: "contain" }} />
         </Card>
       )}
-
-      <Divider />
+   
+    <Divider>插入损耗特性</Divider>
 
       <Form.Item>
         <Checkbox checked={showInsertLoss} onChange={(e) => {
           setShowInsertLoss(e.target.checked);
-          debouncedSaveData("insertion_loss", e.target.checked);
+          debouncedSaveData("insertion_loss",insertLossId,"is_checked", e.target.checked, e.target.checked);
         }}>
           插入损耗特性
         </Checkbox>
       </Form.Item>
 
-      <Divider />
+      <Divider>重量</Divider>
       <Form.Item>
         <Checkbox checked={showWeightInput} onChange={(e) => {
           setShowWeightInput(e.target.checked);
           if (!e.target.checked) {
             setWeightData({ value: null, unit: "kg" });
-            debouncedSaveData("weightValue", null);
+            debouncedSaveData("",weightId,"","", e.target.checked);
           }
         }}>
           重量
@@ -236,14 +271,31 @@ const CircuitAndLossForm = ({ projectId }) => {
         </Row>
       )}
 
-      <Divider />
-
-      <Form.Item name="environmentalTests" label="环境特性">
-        <Checkbox.Group options={environmentalOptions} onChange={(values) => {
-          setEnvironmentalTests(values);
-          debouncedSaveData("environmental_characteristics", values);
-        }} value={environmentalTests} />
+      <Divider>环境特性</Divider>
+      <Form.Item>
+        <Checkbox checked={showEnvironmentalTests} onChange={(e) => {
+          setShowEnvironmentalTests(e.target.checked);
+          setEnvironmentalTests([]);
+          debouncedSaveData("environmental_characteristics", 
+            environmentalId,"is_checked", e.target.checked,e.target.checked);
+        
+        }}>
+          环境特性
+        </Checkbox>
       </Form.Item>
+
+      {showEnvironmentalTests && (
+        <Form.Item name="environmentalTests" label="">
+          <Checkbox.Group
+            options={environmentalOptions}
+            value={environmentalTests}
+            onChange={(values) => {
+              setEnvironmentalTests(values);
+              handleEnvOptions(values);
+            }}
+          />
+        </Form.Item>
+      )}
     </Form>
   );
 };
