@@ -1,10 +1,10 @@
 import apiClient from './axiosInterceptor';
 
-export const downloadFileByProjectId = async (projectId) => {
+export const downloadTechManualByProjectId = async (projectId) => {
   try {
     // 发起 GET 请求
     const response = await apiClient.get(
-      `/word/${projectId}`,
+      `/word/tech_manual/${projectId}`,
       { responseType: 'blob' } // 接收文件流
     );
 

@@ -1,22 +1,18 @@
-import React, { useState } from "react";
-import { Checkbox, List } from "antd";
+import React, { useState, useEffect } from "react";
+import { Checkbox, List, Button, message } from "antd";
 import { DragOutlined } from "@ant-design/icons";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { getAllTechnicalFeatures } from "../api/TechnicalFeatureService";
+import { getProjectFeatures, saveProjectFeatures } from "../api/ProjectFeatureService";
 
-
-const noticeOptions = [
-  { id: 1, label: "产品尺寸小，外观美观。" },
-  { id: 2, label: "产品的元器件和外壳可以实现100%国产化。" },
-  { id: 3, label: "产品内部电子元器件的质量等级为普军级及以上等级。" },
-];
-
-
-// **单个可拖拽列表项**
+/**
+ * 单个可拖拽列表项
+ */
 const SortableItem = ({ item, index }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.feature_id });
 
   return (
     <List.Item
@@ -25,7 +21,7 @@ const SortableItem = ({ item, index }) => {
       {...listeners}
       style={{
         display: "flex",
-        alignItems: "center", // ✅ 确保元素垂直居中
+        alignItems: "center",
         background: "#f8f8f8",
         padding: "10px",
         borderRadius: "5px",
@@ -38,39 +34,119 @@ const SortableItem = ({ item, index }) => {
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "center", // ✅ 居中序号
-          width: "30px", // ✅ 固定宽度，让序号对齐
-          height: "100%", // ✅ 让序号跟随列表项高度
+          justifyContent: "center",
+          width: "30px",
+          height: "100%",
           textAlign: "center",
           fontWeight: "bold",
         }}
       >
         {index + 1}.
       </div>
-      <span style={{ flex: 1 }}>{item.label}</span> {/* ✅ 让文本自适应宽度 */}
+      <span style={{ flex: 1 }}>{item.label}</span>
       <DragOutlined style={{ marginLeft: 10, cursor: "grab" }} />
     </List.Item>
   );
 };
 
+const ProductTechnicalFeatures = ({ projectId }) => {
+  const [technicalFeatures, setTechnicalFeatures] = useState([]); // 所有技术特点
+  const [selectedFeatures, setSelectedFeatures] = useState([]); // 选中的技术特点
+  const [checkedItems, setCheckedItems] = useState([]); // 复选框状态
 
-const ProductTechnicalFeatures = () => {
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [checkedItems, setCheckedItems] = useState([]);
+  /**
+   * 获取数据：所有技术特点 + 项目已选技术特点
+   */
+  useEffect(() => {
 
-  // 处理勾选变化
-  const handleCheckboxChange = (checkedValues) => {
-    setCheckedItems(checkedValues);
-    setSelectedItems(noticeOptions.filter((item) => checkedValues.includes(item.id)));
+    
+   if (projectId) {
+      fetchData();
+    }
+
+    
+    console.log("technicalFeatures",technicalFeatures)  
+    console.log("selectedFeatures",selectedFeatures)  
+    console.log("checkedItems",checkedItems)  
+  }, [projectId]);
+
+  const fetchData = async () => {
+      
+    try {
+
+    const [allFeatures, projectFeatures] = await Promise.all([
+            getAllTechnicalFeatures(),
+            getProjectFeatures(projectId),
+
+      ]);
+     if (allFeatures) {
+        setTechnicalFeatures(allFeatures.data);
+      }
+    if (Array.isArray(projectFeatures.data)) {
+        setSelectedFeatures(projectFeatures.data);
+        console.log("checkedItems",projectFeatures.data)  
+        setCheckedItems(projectFeatures.data.map((item) => item.feature_id));
+      }
+    } catch (error) {
+      console.error("获取数据失败:", error);
+      message.error("数据加载失败，请刷新页面");
+    }
   };
 
-  // 处理拖拽排序
+  /**
+   * 复选框变化处理
+   */
+  const handleCheckboxChange = (checkedValues) => {
+    console.log(" handleCheckboxChange checkedValues",checkedValues)  
+    console.log(" handleCheckboxChange technicalFeatures",technicalFeatures)  
+    setCheckedItems(checkedValues);
+    setSelectedFeatures(
+      technicalFeatures
+        .filter((item) => checkedValues.includes(item.id))
+        .map((item, index) => ({
+          feature_id: item.id, // API 需要 feature_id
+          sort_order: index + 1, // 按顺序赋值 sort_order
+          label: item.label,
+        }))
+    );
+
+    setTimeout(() => {
+      console.log("✅ handleCheckboxChange setSelectedFeatures (最新):", selectedFeatures);
+  }, 0);
+  };
+
+  /**
+   * 拖拽排序处理
+   */
   const onDragEnd = (event) => {
+    console.log(" 拖拽排序  ----  event",event)
     const { active, over } = event;
-    if (active.id !== over.id) {
-      const oldIndex = selectedItems.findIndex((item) => item.id === active.id);
-      const newIndex = selectedItems.findIndex((item) => item.id === over.id);
-      setSelectedItems((items) => arrayMove(items, oldIndex, newIndex));
+    if (!active || !over || active.id === over.id) return;
+
+    const oldIndex = selectedFeatures.findIndex((item) => item.feature_id === active.id);
+    const newIndex = selectedFeatures.findIndex((item) => item.feature_id === over.id);
+    const newItems = arrayMove(selectedFeatures, oldIndex, newIndex);
+
+    // 重新赋值 sort_order
+    const sortedItems = newItems.map((item, index) => ({
+      ...item,
+      sort_order: index + 1,
+    }));
+    console.log(" 拖拽排序    sortedItems",sortedItems)  
+
+    setSelectedFeatures(sortedItems);
+  };
+
+  /**
+   * 保存数据到后端
+   */
+  const handleSave = async () => {
+    try {
+      await saveProjectFeatures(projectId, selectedFeatures);
+      message.success("数据保存成功！");
+    } catch (error) {
+      console.error("保存失败:", error);
+      message.error("数据保存失败，请重试！");
     }
   };
 
@@ -88,29 +164,37 @@ const ProductTechnicalFeatures = () => {
       <h3>产品技术特点</h3>
 
       {/* 复选框选择 */}
-      <Checkbox.Group
-        options={noticeOptions.map((option) => ({ label: option.label, value: option.id }))}
-        value={checkedItems}
-        onChange={handleCheckboxChange}
-      />
+      <Checkbox.Group value={checkedItems} onChange={handleCheckboxChange} style={{ width: "100%" }}>
+        {technicalFeatures.map((option) => (
+          <div key={option.id} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+            <Checkbox value={option.id} />
+            <span style={{ marginLeft: "8px", flex: 1 }}>{option.label}</span>
+          </div>
+        ))}
+      </Checkbox.Group>
 
       {/* 可排序列表 */}
-      {selectedItems.length > 0 && (
+      {selectedFeatures.length > 0 && (
         <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={selectedItems} strategy={verticalListSortingStrategy}>
+          <SortableContext items={selectedFeatures.map((item) => item.feature_id)} strategy={verticalListSortingStrategy}>
             <List
               bordered
-              dataSource={selectedItems}
-              renderItem={(item, index) => <SortableItem key={item.id} item={item} index={index} />}
+              dataSource={selectedFeatures}
+              renderItem={(item, index) => <SortableItem key={item.feature_id} item={item} index={index} />}
               style={{ marginTop: "20px" }}
             />
           </SortableContext>
         </DndContext>
+      )}
+
+      {/* 保存按钮 */}
+      {selectedFeatures.length > 0 && (
+        <Button type="primary" onClick={handleSave} style={{ marginTop: "20px" }}>
+          保存
+        </Button>
       )}
     </div>
   );
 };
 
 export default ProductTechnicalFeatures;
-
-

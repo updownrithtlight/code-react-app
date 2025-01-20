@@ -4,7 +4,7 @@ import { FileWordOutlined } from "@ant-design/icons";
 import useGenerateWord from "../hooks/useGenerateWord";
 
 const WordExport = ({ projectId }) => {
-  const { downloadWord, loading } = useGenerateWord();
+  const { downloadTechManual, loading } = useGenerateWord();
 
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
@@ -12,7 +12,7 @@ const WordExport = ({ projectId }) => {
         type="primary"
         icon={<FileWordOutlined />}
         loading={loading}
-        onClick={() => downloadWord(projectId)}
+        onClick={() => downloadTechManual(projectId)}
         disabled={!projectId}
         style={{
           backgroundColor: "#1890ff",

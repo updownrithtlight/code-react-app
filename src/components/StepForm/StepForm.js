@@ -186,7 +186,7 @@ const StepForm = ({ id }) => {
     },
     {
       title: '产品技术特点/使用注意事项',
-      content: <TechnicalFeatures formData={formData} setFormData={setFormData} />,
+      content: <TechnicalFeatures projectId={projectId} />,
       handleSubmit: async () => setCurrent(current + 1),
     },
     {
