@@ -22,7 +22,7 @@ const MainLayout = ({ children }) => {
     <Layout style={{ minHeight: '100vh' }}>
       {/* 左侧菜单 Sider */}
       <Sider className="ant-layout-sider" width={160} breakpoint="lg" collapsedWidth="80">
-        <div className="logo">CODE-GEN</div>
+        <div className="logo">文档-GEN</div>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
           {menuData.map((menuItem) => (
             <Menu.Item key={menuItem.id}>

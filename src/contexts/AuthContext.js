@@ -27,6 +27,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await logoutApi(); // 调用后端 API 登出
+      dispatch(clearAuthState()); // 更新 Redux 状态
+
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {

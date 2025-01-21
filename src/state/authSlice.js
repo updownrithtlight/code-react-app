@@ -19,7 +19,7 @@ const authSlice = createSlice({
     clearAuthState(state) {
       state.isAuthenticated = false;
       localStorage.removeItem('isAuthenticated');
-      sessionStorage.removeItem('accessToken'); // 清除 Token
+      sessionStorage.removeItem('access_token'); // 清除 Token
     },
   },
 });
