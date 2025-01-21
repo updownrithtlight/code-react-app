@@ -5,7 +5,7 @@ import useGenerateWord from "../hooks/useGenerateWord";
 import { generateTechManualProjectById} from "../api/FileService";
 import { baseURL } from '../api/api-config'; // Import baseURL from configuration file
 
-const WordExport = ({ projectId }) => {
+const TechnicalManualWordExport = ({ projectId }) => {
   const { downloadTechManual, loading } = useGenerateWord();
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -15,7 +15,7 @@ const WordExport = ({ projectId }) => {
     if (!projectId) return;
      const response = await generateTechManualProjectById(projectId);
      console.log('关于了--------',response)
-    const url = `${baseURL}/office_file/preview/tech-manual/${response}`;
+    const url = `${baseURL}/office_file/preview/${response}`;
     setPreviewUrl(url);
     setPreviewVisible(true);
   };
@@ -63,4 +63,4 @@ const WordExport = ({ projectId }) => {
   );
 };
 
-export default WordExport;
+export default TechnicalManualWordExport;

@@ -58,11 +58,12 @@ export const generateTechManualProjectById = async (projectId) => {
   return response.data;
 };
 
-/**
- * 📌 预览技术说明书 PDF
- * @param {number} projectId - 项目 ID
- */
-export const previewTechManual = async (projectId) => {
-  console.log('dadfsfsdfdsfsdfsdfdsf',projectId)
-  return `${baseURL}/office_file/preview/tech-manual/${projectId}`;
+
+export const generateproductSpecProjectById = async (projectId) => {
+  const response = await apiClient.get(`/office_file/generate/product_spec/${projectId}`);
+  return response.data;
 };
+
+
+
+

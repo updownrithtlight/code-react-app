@@ -45,3 +45,10 @@ export const downloadFileByProjectId = async (projectId) => {
     throw new Error('File download failed.');
   }
 };
+
+
+
+export const generatematerialInfoProjectById = async (projectId) => {
+  const response = await apiClient.get(`/office_file/generate/excel-bom/${projectId}`);
+  return response.data;
+};
