@@ -1,45 +1,76 @@
-import React, { useState } from "react";
-import { Table, Checkbox, Select, Input, Button } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Checkbox, Select, Input, Button, message } from "antd";
+import { getInspectionItems, getProjectInspections, saveProjectInspections } from "../../api/InspectionService";
 
 const { Option } = Select;
 
-// 从文档解析的检验项目数据
-const initialData = [
-  { key: "1", name: "壳体外观", pcb: true, beforeSeal: true, afterLabel: false, samplePlan: "100%" },
-  { key: "2", name: "焊点外观", pcb: true, beforeSeal: true, afterLabel: false, samplePlan: "100%" },
-  { key: "3", name: "引出端外观", pcb: false, beforeSeal: true, afterLabel: true, samplePlan: "100%" },
-  { key: "4", name: "标志外观", pcb: false, beforeSeal: false, afterLabel: true, samplePlan: "100%" },
-  { key: "5", name: "壳体尺寸", pcb: false, beforeSeal: true, afterLabel: true, samplePlan: "100%" },
-  { key: "6", name: "线线耐电压", pcb: true, beforeSeal: true, afterLabel: true, samplePlan: "100%" },
-  { key: "7", name: "温度冲击", pcb: false, beforeSeal: false, afterLabel: true, samplePlan: "100%" },
-  { key: "8", name: "插入损耗", pcb: false, beforeSeal: false, afterLabel: true, samplePlan: "表6" },
-  { key: "9", name: "常温加电测压降", pcb: false, beforeSeal: true, afterLabel: false, samplePlan: "S阶段全检，D阶段首件" },
-  { key: "10", name: "保险座检验", print: false, preSeal: false, postLabel: true, samplePlan: "100%" },
-  { key: "11", name: "振动试验", print: false, preSeal: false, postLabel: true, samplePlan: "100%" },
-  { key: "12", name: "湿热试验", print: false, preSeal: false, postLabel: true, samplePlan: "100%" },
-  { key: "13", name: "冲击试验", print: false, preSeal: false, postLabel: true, samplePlan: "100%" },
-  { key: "14", name: "加速度试验", print: false, preSeal: false, postLabel: true, samplePlan: "100%" },
-  { key: "15", name: "浪涌测试", print: false, preSeal: false, postLabel: true, samplePlan: "100%" }
-
-];
-
-const InspectionForm = ({ onSave }) => {
-  const [dataSource, setDataSource] = useState(initialData);
+const InspectionForm = ({ projectId }) => {
+  const [dataSource, setDataSource] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState([]); // 选中的检验项目
 
-  // 处理复选框选择
+  // **📌 获取所有标准检验项目**
+  useEffect(() => {
+    getInspectionItems()
+      .then((res) => {
+        if (res.success) {
+          const items = res.data.map(item => ({
+            ...item,
+            pcb: false,
+            beforeSeal: false,
+            afterLabel: false,
+            samplePlan: "100%"
+          }));
+          setDataSource(items);
+        }
+      })
+      .catch(() => message.error("加载检验项目失败"));
+  }, []);
+
+  // **📌 获取 `project_id` 绑定的数据**
+  useEffect(() => {
+    getProjectInspections(projectId)
+      .then((res) => {
+        if (res.success) {
+          const projectInspections = res.data;
+          setSelectedKeys(projectInspections.map(item => item.key));
+
+          setDataSource(prevData =>
+            prevData.map(item => {
+              const found = projectInspections.find(pi => pi.key === item.key);
+              return found ? { ...item, ...found } : item;
+            })
+          );
+        }
+      })
+      .catch(() => message.error("加载项目检验数据失败"));
+  }, [projectId]);
+
+  // **📌 处理复选框选择**
   const handleSelect = (selectedKeys) => {
     setSelectedKeys(selectedKeys);
   };
 
-  // 处理单元格编辑
+  // **📌 处理单元格编辑**
   const handleInputChange = (key, field, value) => {
-    setDataSource((prev) =>
-      prev.map((item) => (item.key === key ? { ...item, [field]: value } : item))
+    setDataSource(prev =>
+      prev.map(item => (item.key === key ? { ...item, [field]: value } : item))
     );
   };
 
-  // 表格列定义
+  // **📌 提交 `project_id` 绑定的数据**
+  const handleSubmit = () => {
+    saveProjectInspections(projectId, dataSource.filter(item => selectedKeys.includes(item.key)))
+      .then((res) => {
+        if (res.success) {
+          message.success("数据保存成功");
+        } else {
+          message.error("数据保存失败");
+        }
+      })
+      .catch(() => message.error("提交请求失败"));
+  };
+
+  // **📌 表格列定义**
   const columns = [
     {
       title: "检验项目",
@@ -127,13 +158,8 @@ const InspectionForm = ({ onSave }) => {
 
   return (
     <div>
-      <Table
-        rowKey="key"
-        columns={columns}
-        dataSource={dataSource}
-        pagination={false}
-      />
-      <Button type="primary" style={{ marginTop: 16 }} onClick={() => onSave(dataSource)}>
+      <Table rowKey="key" columns={columns} dataSource={dataSource} pagination={false} />
+      <Button type="primary" style={{ marginTop: 16 }} onClick={handleSubmit}>
         提交
       </Button>
     </div>
