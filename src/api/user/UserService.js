@@ -76,3 +76,12 @@ export const enableUser = async (userId) => {
   const response = await apiClient.put(`/users/${userId}/enable`);
   return response.data;
 };
+
+
+
+export const updateUserRoles = async (userId,data) => {
+      // ✅ **更新用户角色**
+      const response = await apiClient.put(`/users/${userId}/roles`, data);
+      return response.data;
+ 
+  };

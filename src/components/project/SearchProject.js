@@ -81,8 +81,7 @@ const SearchProject = ({ queryParams, onQueryParamChange, onSearch, onReset }) =
           <Option value="信号">信号</Option>
           <Option value="电源、信号">电源、信号</Option>
           <Option value="无">无</Option>
-          <Option value="custom">其他</Option>
-        </Select>
+         </Select>
       </Form.Item>
 
       {customFields.projectType && (

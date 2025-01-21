@@ -32,7 +32,7 @@
 
 /* Header 左侧 */
 .header-left {
-  margin-left: 200px; /* 与 Sider 对齐 */
+  margin-left: 160px; /* 与 Sider 对齐 */
   font-size: 18px;
   font-weight: bold;
   color: #000;
@@ -68,7 +68,7 @@
 .ant-layout-content {
   margin-top: 0; /* 移除顶部间距 */
 
-  margin-left: 200px; /* 与 Sider 对齐 */
+  margin-left: 160px; /* 与 Sider 对齐 */
   padding:  0 0px;
   background: #f0f2f5;
   min-height: calc(100vh - 64px); /* 确保内容占满剩余高度 */

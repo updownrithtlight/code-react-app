@@ -18,12 +18,10 @@ const MainLayout = ({ children }) => {
     return <div style={{ textAlign: 'center', marginTop: '20%' }}>Loading menu...</div>;
   }
 
-
-
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* 左侧菜单 Sider */}
-      <Sider className="ant-layout-sider" width={200} breakpoint="lg" collapsedWidth="80">
+      <Sider className="ant-layout-sider" width={160} breakpoint="lg" collapsedWidth="80">
         <div className="logo">CODE-GEN</div>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
           {menuData.map((menuItem) => (

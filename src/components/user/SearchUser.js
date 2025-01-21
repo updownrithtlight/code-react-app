@@ -12,9 +12,9 @@ const SearchUser = ({ queryParams, onQueryParamChange, onSearch, onReset }) => {
     <Form.Item
         label="用户名"
         name="user_fullname"
-        rules={[{ required: true, message: '请输入物料代码！' }]}
+        rules={[{ required: true, message: '请输入用户名！' }]}
       >
-      <Input placeholder="请输入物料代码！"  value={queryParams.user_fullname}
+      <Input placeholder="请输入用户名！"  value={queryParams.user_fullname}
           onChange={(e) => onQueryParamChange('user_fullname', e.target.value)}
         />
       </Form.Item>
@@ -28,10 +28,10 @@ const SearchUser = ({ queryParams, onQueryParamChange, onSearch, onReset }) => {
         />
       </Form.Item>
  
-      <Form.Item label="状态" key="status"      style={{ width: 180 }}  // 设置宽度
+      <Form.Item label="状态" key="status"    style={{ width: 180 }}  // 设置宽度
       >
         <Select
-          placeholder="请选择产品类型"
+          placeholder="请选择状态"
           value={queryParams.status}
           onChange={(value) => onQueryParamChange('status', value)}
         >
