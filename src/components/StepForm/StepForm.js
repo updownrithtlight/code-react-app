@@ -8,6 +8,7 @@ import TechnicalFeatures from '../TechnicalFeatures';
 import TechnicalManualWordExport from '../TechnicalManualWordExport';
 import ProductSpecificationWordExport from '../ProductSpecificationWordExport';
 import CircuitAndLossForm from '../CircuitAndLossForm';
+import MarkingForm from '../MarkingForm';
 import InspectionForm from '../forms/InspectionForm';
 import useProjects from '../../hooks/useProject';
 import useProjectField from '../../hooks/useProjectField';
@@ -26,6 +27,7 @@ const StepForm = ({ id }) => {
   const [formStructureData, setFormStructureData] = useState({});
   const [completeRequirementsParentId, setCompleteRequirementsParentId] = useState(0);
   const [structureDimensionsParentId, setStructureDimensionsParentId] = useState(0);
+  const [markingImageId, setMarkingImageId] = useState(0);
 
   // API Hooks
   const { fetchById, save } = useProjects();
@@ -197,6 +199,17 @@ const StepForm = ({ id }) => {
     {
       title: '试验项目',
       content: <InspectionForm projectId={projectId} />,
+      handleSubmit: async () => setCurrent(current + 1),
+    },
+    {
+      title: '标志',
+      content: <MarkingForm projectId={projectId} fieldId={markingImageId} />,
+      loadData: async () => {
+        if (projectId) {
+          const  markingImage= await fetchFieldDefinitionById('marking_image');
+          setMarkingImageId(markingImage.data.id)
+        }
+      },
       handleSubmit: async () => setCurrent(current + 1),
     },
     {
