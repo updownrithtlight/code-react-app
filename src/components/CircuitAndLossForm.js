@@ -131,11 +131,9 @@ const CircuitAndLossForm = ({ projectId }) => {
         insertLoss:  insertionLossResp.data.is_checked || false,
         environmentalTests: environmentalResp.data.custom_value || [],
       });
-
       setSelectedCircuit(
         data.custom_value ? treeData.flatMap(p => p.children || []).find(item => item.value === data.custom_value) : null
       );
-
       setIsHandDrawn(data.custom_value === -2);
       if (data.image_path) setUploadedImage(data.image_path);
       setShowWeightInput(!!weightString);
@@ -143,7 +141,6 @@ const CircuitAndLossForm = ({ projectId }) => {
       setShowEnvironmentalTests(environmentalResp.data.is_checked)
       console.log('array??',environmentalResp.data.custom_value)
       setEnvironmentalTests(environmentalResp.data.custom_value || []);
-
       setLoading(false);
     } catch (error) {
       message.error("获取数据失败");
