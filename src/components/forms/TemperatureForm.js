@@ -77,7 +77,7 @@ const TemperatureForm = ({ projectId, fieldId }) => {
   }, [fieldId, projectId, form]);
 
   /** 自动提交 */
-  const handleSave = async (key, value) => {
+  const handleSave = async (key, value,code) => {
     if (!value) return;
 
     try {
@@ -85,6 +85,7 @@ const TemperatureForm = ({ projectId, fieldId }) => {
         project_id: projectId,
         field_id: key,
         custom_value: value,
+        code:code
       });
 
       message.success("数据已保存!");
@@ -95,24 +96,24 @@ const TemperatureForm = ({ projectId, fieldId }) => {
   };
 
   /** 处理 `Select` 选择 */
-  const handleChange = (key, value) => {
+  const handleChange = (key, value,code) => {
     setCustomFields((prev) => ({
       ...prev,
       [key]: value === "custom",
     }));
 
     if (value !== "custom") {
-      handleSave(key, value);
+      handleSave(key, value,code);
     }
   };
 
   /** 处理 `custom` 输入框 */
-  const handleCustomInputBlur = (key) => {
+  const handleCustomInputBlur = (key,code) => {
     const [min, max] = customValues[key];
 
     if (min && max) {
       const customValue = `${min}℃ ~ ${max}℃`;
-      handleSave(key, customValue);
+      handleSave(key, customValue,code);
     }
   };
 
@@ -124,7 +125,7 @@ const TemperatureForm = ({ projectId, fieldId }) => {
             <Select
               placeholder={`请选择${field.label}`}
               style={{ width: 180 }}
-              onChange={(value) => handleChange(field.key, value)}
+              onChange={(value) => handleChange(field.key, value,field.code)}
             >
               <Option value="-40℃ ~ +70℃">-40℃ ~ +70℃</Option>
               <Option value="-55℃ ~ +85℃">-55℃ ~ +85℃</Option>
@@ -144,7 +145,7 @@ const TemperatureForm = ({ projectId, fieldId }) => {
                     newValues[0] = e.target.value;
                     setCustomValues((prev) => ({ ...prev, [field.key]: newValues }));
                   }}
-                  onBlur={() => handleCustomInputBlur(field.key)}
+                  onBlur={() => handleCustomInputBlur(field.key,field.code)}
                 />℃
               </Form.Item>
               <span> ~ </span>
