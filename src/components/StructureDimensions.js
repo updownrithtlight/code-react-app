@@ -20,12 +20,12 @@ const StructureDimensions = ({
 
   // 预定义字段信息
   const FIELD_DEFINITIONS = {
-    dimensions: { id: "52", name: "外形尺寸", code: "dimensions" },
-    housing_material: { id: "53", name: "壳体材质", code: "housing_material" },
-    surface_treatment: { id: "54", name: "生产工艺", code: "surface_treatment" },
-    manufacturing_process: { id: "55", name: "表面处理", code: "manufacturing_process" },
-    input_terminal: { id: "56", name: "输入端引出方式", code: "input_terminal" },
-    output_terminal: { id: "57", name: "输出端引出方式", code: "output_terminal" }
+    dimensions: { id: "51", name: "外形尺寸", code: "dimensions" },
+    housing_material: { id: "52", name: "壳体材质", code: "housing_material" },
+    surface_treatment: { id: "53", name: "生产工艺", code: "surface_treatment" },
+    manufacturing_process: { id: "54", name: "表面处理", code: "manufacturing_process" },
+    input_terminal: { id: "55", name: "输入端引出方式", code: "input_terminal" },
+    output_terminal: { id: "56", name: "输出端引出方式", code: "output_terminal" }
   };
 
   useEffect(() => {
