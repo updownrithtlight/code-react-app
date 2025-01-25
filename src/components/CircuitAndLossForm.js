@@ -5,6 +5,7 @@ import axios from 'axios';
 import debounce from 'lodash/debounce';
 import { getFieldDefinitionById } from '../api/fielddefinition/FieldDefinitionService';
 import { getProjectField, saveProjectField, deleteProjectField } from '../api/projectfield/ProjectFieldService';
+import { baseURL } from '../api/api-config'; // Import baseURL from configuration file
 
 const { Option } = Select;
 
@@ -153,8 +154,7 @@ const CircuitAndLossForm = ({ projectId }) => {
     debounce(async (code, key,column,value,flag) => {
       try {
         setLoading(true);
-        console.log('保存了',code,key,column,value,flag)
-        if(flag){
+      if(flag){
           await saveProjectField({
             project_id: projectId,
             field_id: key,
@@ -204,7 +204,7 @@ const CircuitAndLossForm = ({ projectId }) => {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const response = await axios.post("http://127.0.0.1:5000/api/file/upload", formData);
+      const response = await axios.post(`${baseURL}/file/upload`, formData);
       if (response.data.success) {
         const fileUrl = response.data.data.url;
         setUploadedImage(fileUrl);
@@ -220,9 +220,7 @@ const CircuitAndLossForm = ({ projectId }) => {
     /** **拼接重量字符串并保存** */
     const handleWeightChange = (type, value) => {
       const updatedWeightData = { ...weightData, [type]: value };
-  
       setWeightData(updatedWeightData);
-  
       if (updatedWeightData.value !== null && updatedWeightData.unit) {
         const weightString = `${updatedWeightData.value}${updatedWeightData.unit}`;
         debouncedSaveData("weight",weightId,"custom_value", weightString,true);

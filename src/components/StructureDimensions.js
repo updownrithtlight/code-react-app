@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Upload, Checkbox, Row, Col, Modal, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { baseURL } from '../api/api-config'; // Import baseURL from configuration file
 
 const { Option } = Select;
 
@@ -15,6 +16,7 @@ const StructureDimensions = ({
   const [fileList, setFileList] = useState([]);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const uploadUrl = `${baseURL}/file/upload`;
 
   // 预定义字段信息
   const FIELD_DEFINITIONS = {
@@ -87,7 +89,7 @@ const StructureDimensions = ({
         <Col span={24}>
           <Form.Item label="外形尺寸">
             <Upload
-              action="http://127.0.0.1:5000/api/file/upload"
+              action={uploadUrl}
               listType="picture-card"
               fileList={fileList}
               onChange={({ file, fileList }) => {

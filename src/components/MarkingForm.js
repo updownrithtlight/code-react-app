@@ -4,6 +4,7 @@ import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
 import debounce from "lodash/debounce";
 import { getProjectField, saveProjectField, deleteProjectField } from '../api/projectfield/ProjectFieldService';
+import { baseURL } from '../api/api-config'; // Import baseURL from configuration file
 
 const MarkingForm = ({ projectId, fieldId }) => {
   const [form] = Form.useForm();
@@ -56,7 +57,7 @@ const MarkingForm = ({ projectId, fieldId }) => {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const response = await axios.post("http://127.0.0.1:5000/api/file/upload", formData);
+      const response = await axios.post(`${baseURL}/file/upload`, formData);
      if (response.data.success) {
         const fileUrl = response.data.data.url;
         setUploadedImage(fileUrl);
